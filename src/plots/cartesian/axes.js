@@ -592,7 +592,6 @@ axes.calcTicks = function calcTicks(ax, opts) {
     }
 
     var isDLog = (ax.type === 'log') && !(isNumeric(ax.dtick) || ax.dtick.charAt(0) === 'L');
-
     var tickVals;
     function generateTicks() {
         var xPrevious = null;
@@ -619,6 +618,16 @@ axes.calcTicks = function calcTicks(ax, opts) {
     }
 
     generateTicks();
+
+    var isPeriod = ax.ticklabelmode === 'period';
+    var addOneTickToStart = isPeriod && tickVals.length > 2;
+
+    if(addOneTickToStart) {
+        tickVals = [{
+            minor: false,
+            value: 2 * tickVals[0].value - tickVals[1].value
+        }].concat(tickVals);
+    }
 
     if(ax.rangebreaks) {
         // replace ticks inside breaks that would get a tick
@@ -684,7 +693,6 @@ axes.calcTicks = function calcTicks(ax, opts) {
     var minRange = Math.min(rng[0], rng[1]);
     var maxRange = Math.max(rng[0], rng[1]);
 
-    var isPeriod = ax.ticklabelmode === 'period';
     var definedDelta;
     if(isPeriod && ax.tickformat) {
         var _has = function(str) {
@@ -748,6 +756,19 @@ axes.calcTicks = function calcTicks(ax, opts) {
                 ticksOut[i].text = '';
             }
         }
+    }
+
+    if(addOneTickToStart && !ticksOut[0].text) {
+        // clear first element
+        ticksOut.shift();
+
+        // redo the text of new first element
+        ticksOut[0].text = axes.tickText(
+            ax,
+            tickVals[1].value,
+            false, // hover
+            tickVals[1].minor // noSuffixPrefix
+        ).text;
     }
 
     ax._inCalcTicks = false;
