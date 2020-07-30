@@ -225,7 +225,7 @@ dragElement.init = function init(options) {
         if((new Date()).getTime() - gd._mouseDownTime > doubleClickDelay) {
             numClicks = Math.max(numClicks - 1, 1);
         }
-
+        console.log("Maybe dragging")
         if(gd._dragged) {
             if(options.doneFn) options.doneFn();
         } else {
