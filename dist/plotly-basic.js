@@ -38954,6 +38954,8 @@ lib.ensureNumber = function ensureNumber(v) {
     if(!isNumeric(v)) return BADNUM;
     v = Number(v);
     if(v < -FP_SAFE || v > FP_SAFE) return BADNUM;
+    console.log(v)
+    console.log(Number(v))
     return isNumeric(v) ? Number(v) : BADNUM;
 };
 

@@ -147,7 +147,7 @@ dragElement.init = function init(options) {
 
         if(options.prepFn) options.prepFn(e, startX, startY);
 
-        if(hasHover && !rightClick) {
+        if(hasHover) {
             dragCover = coverSlip();
             dragCover.style.cursor = window.getComputedStyle(element).cursor;
         } else if(!hasHover) {
@@ -183,7 +183,7 @@ dragElement.init = function init(options) {
             dragElement.unhover(gd);
         }
 
-        if(gd._dragged && options.moveFn && !rightClick) {
+        if(gd._dragged && options.moveFn) {
             gd._dragdata = {
                 element: element,
                 dx: dx,
@@ -225,7 +225,6 @@ dragElement.init = function init(options) {
         if((new Date()).getTime() - gd._mouseDownTime > doubleClickDelay) {
             numClicks = Math.max(numClicks - 1, 1);
         }
-        console.log("Maybe dragging")
         if(gd._dragged) {
             if(options.doneFn) options.doneFn();
         } else {

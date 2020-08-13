@@ -63,7 +63,7 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
     var zoomlayer = gd._fullLayout._zoomlayer;
     var isMainDrag = (ns + ew === 'nsew');
     var singleEnd = (ns + ew).length === 1;
-
+    let zoomPreviousPosition;
     // main subplot x and y (i.e. found in plotinfo - the main ones)
     var xa0, ya0;
     // {ax._id: ax} hash objects
@@ -169,17 +169,18 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
                     if(dragModeNow === 'pan') dragModeNow = 'zoom';
                     else if(!selectingOrDrawing(dragModeNow)) dragModeNow = 'pan';
                 } else if(e.ctrlKey) {
-                    dragModeNow = 'pan';
+                    dragModeNow = 'zoom';
                 } else if(e.button == 2) {
-                    dragModeNow = 'specialZoom'
+                    dragModeNow = 'rightClickZoom'
                     dragOptions.minDrag = 1;
                 }
             } else {
                 // all other draggers just pan
                 dragModeNow = 'pan';
             }
+    
         }
-
+        HTMLFormControlsCollection.lof
         if(freeMode(dragModeNow)) dragOptions.minDrag = 1;
         else dragOptions.minDrag = undefined;
 
@@ -189,7 +190,6 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
             // this attaches moveFn, clickFn, doneFn on dragOptions
             prepSelect(e, startX, startY, dragOptions, dragModeNow);
         } else {
-            console.log("ELSE")
             dragOptions.clickFn = clickFn;
             if(selectingOrDrawing(dragModePrev)) {
                 // TODO Fix potential bug
@@ -204,15 +204,10 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
                 // selection cache).
                 clearAndResetSelect();
             }
-            console.log("before end of zoomm or pan")
             if(!allFixedRanges) {
                 if(dragModeNow === 'zoom') {
-                    console.log("END OF ZOOM")
                     dragOptions.moveFn = zoomMove;
-                    console.log("Drag options: ")
-                    console.log(dragOptions)
                     dragOptions.doneFn = zoomDone;
-
                     // zoomMove takes care of the threshold, but we need to
                     // minimize this so that constrained zoom boxes will flip
                     // orientation at the right place
@@ -220,19 +215,19 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
 
                     zoomPrep(e, startX, startY);
                 } else if(dragModeNow === 'pan') {
-                    updates = {};
+                    updates = {}; // solving issue with uncaught promise
                     dragOptions.moveFn = plotDrag;
                     dragOptions.doneFn = dragTail;
-                } else if(dragModeNow === 'specialZoom'){
+                } else if(dragModeNow === 'rightClickZoom'){
+                    zoomPrep(e, startX, startY);
+                    console.log("Cursor: " + cursor)
                     updates = {};
                     dragOptions.moveFn = plotZoom;
                     dragOptions.doneFn = plotZoomTail;
-                    
                 }
             }
         }
         gd._fullLayout._redrag = function() {
-            console.log("BEFORE REDRAG") 
             var dragDataNow = gd._dragdata;
 
             if(dragDataNow && dragDataNow.element === dragger) {
@@ -356,11 +351,12 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
         if(gd._transitioningWithDuration) {
             return false;
         }
-
         var x1 = Math.max(0, Math.min(pw, dx0 + x0));
         var y1 = Math.max(0, Math.min(ph, dy0 + y0));
         var dx = Math.abs(x1 - x0);
         var dy = Math.abs(y1 - y0);
+
+        
 
         box.l = Math.min(x0, x1);
         box.r = Math.max(x0, x1);
@@ -375,6 +371,7 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
         }
 
         if(links.isSubplotConstrained) {
+
             if(dx > MINZOOM || dy > MINZOOM) {
                 zoomMode = 'xy';
                 if(dx / pw > dy / ph) {
@@ -433,7 +430,7 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
         gd._dragged = zoomDragged;
 
         updateZoombox(zb, corners, box, path0, dimmed, lum);
-        computeZoomUpdates();
+        computeZoomUpdates();// JUMP
         gd.emit('plotly_relayouting', updates);
         dimmed = true;
     }
@@ -557,26 +554,23 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
     }
 
 
-    function plotZoom(dx, dy) {
+    function plotZoom(dx, dy) { // GOTO
         // If a transition is in progress, then disable any behavior:
-        console.log("BUUUm")
         if(gd._transitioningWithDuration) {
             return;
         }
         // prevent axis drawing from monkeying with margins until we're done
-        console.log("HELLO WORLD")
         gd._fullLayout._replotting = true;
         if(xActive === 'ew' || yActive === 'ns') {
-            console.log("IN DIFFICULT IF")
             if(xActive) {
-                dragAxList(xaxes, dx);
-                updateMatchedAxRange('x');
+                zoomAxList(xaxes, dx , 'x');
+                updateMatchedAxRange('x', updates);// PLOTZOOM
             }
             if(yActive) {
-                dragAxList(yaxes, dy);
-                updateMatchedAxRange('y');
+                zoomAxList(yaxes, dy, 'y');
+                updateMatchedAxRange('y', updates);
             }
-            updateSubplots([xActive ? -dx : 0, yActive ? -dy : 0, pw, ph]);
+            updateSubplots([dx, -dy, pw-dx, ph+dy]); // LABEL123
             ticksAndAnnotations();
             return;
         }
@@ -650,10 +644,55 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
 
         updateMatchedAxRange('x');
         updateMatchedAxRange('y');
-        console.log("update subplots")
         updateSubplots([xStart, yStart, pw - dx, ph - dy]);
         ticksAndAnnotations();
         gd.emit('plotly_relayouting', updates);
+    }
+
+    function zoomAxList(axList, pix , ax) {
+        var gbb = mainplot.draglayer.select('.nsewdrag').node().getBoundingClientRect();
+        for(var i = 0; i < axList.length; i++) {
+            var axi = axList[i];
+            if(!axi.fixedrange) {
+                if(axi.rangebreaks) {
+                    var p0 = 0;
+                    var p1 = axi._length;
+                    var d0 = axi.p2l(p0 + pix) - axi.p2l(p0);
+                    var d1 = axi.p2l(p1 + pix) - axi.p2l(p1);
+                    var delta = (d0 + d1) / 2;
+    
+                    axi.range = [
+                        axi.l2r(axi._rl[0] - delta),
+                        axi.l2r(axi._rl[1] - delta)
+                    ];
+                } else {
+                    var gbb = mainplot.draglayer.select('.nsewdrag').node().getBoundingClientRect();
+                    if (ax === "x"){
+                        axi.range = [
+                            axi.l2r(axi._rl[0] + (pix / axi._m)*(x0/gbb.width)),
+                            axi.l2r(axi._rl[1] - (pix / axi._m)*((gbb.width - x0 )/gbb.width))
+                        ];
+                    } else {
+                        let tmp = axi.range[1]
+                        if (axi.range[0] < 0) {
+                            tmp = axi.range[1] - axi.range[0]
+                        }
+                        if(zoomPreviousPosition == undefined) {
+                            zoomPreviousPosition = y0
+                            return
+                        }
+                        let delta = (zoomPreviousPosition- (y0-pix))/100
+                        let center = ((gbb.height -y0)*tmp/gbb.height)+axi.range[0]
+                        axi.range = [
+                            axi.l2r((axi.range[0] - center)*(1+delta) + center ),
+                            axi.l2r((axi.range[1]  - center)*(1+delta) + center )
+                        ];
+                        zoomPreviousPosition = y0 - pix
+                    }   
+                    
+                }
+            }
+        }
     }
     // plotDrag: move the plot in response to a drag
     function plotDrag(dx, dy) {
@@ -661,7 +700,7 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
         if(gd._transitioningWithDuration) {
             return;
         }
-
+        console.log("PLOT DRAG")
         // prevent axis drawing from monkeying with margins until we're done
         gd._fullLayout._replotting = true;
         if(xActive === 'ew' || yActive === 'ns') {
@@ -747,7 +786,6 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
 
         updateMatchedAxRange('x');
         updateMatchedAxRange('y');
-        console.log("update subplots")
         updateSubplots([xStart, yStart, pw - dx, ph - dy]);
         ticksAndAnnotations();
         gd.emit('plotly_relayouting', updates);
@@ -769,6 +807,7 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
             var ax2 = constrainedAxes[0] || xaHash[axId2] || yaHash[axId2];
 
             if(ax2) {
+                
                 if(out) {
                     // zoombox case - don't mutate 'range', just add keys in 'updates'
                     out[ax._name + '.range[0]'] = out[ax2._name + '.range[0]'];
@@ -783,7 +822,6 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
     // Draw ticks and annotations (and other components) when ranges change.
     // Also records the ranges that have changed for use by update at the end.
     function ticksAndAnnotations() {
-        console.log("tickmoving")
         var activeAxIds = [];
         var i;
 
@@ -803,7 +841,7 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
             pushActiveAxIds(links.yaxes);
             pushActiveAxIds(matches.yaxes);
         }
-        console.log("setting updates")
+
         updates = {};
         for(i = 0; i < activeAxIds.length; i++) {
             var axId = activeAxIds[i];
@@ -812,7 +850,6 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
             updates[ax._name + '.range[0]'] = ax.range[0];
             updates[ax._name + '.range[1]'] = ax.range[1];
         }
-
         Axes.redrawComponents(gd, activeAxIds);
     }
 
@@ -893,8 +930,9 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
         // put the subplot viewboxes back to default (Because we're going to)
         // be repositioning the data in the relayout. But DON'T call
         // ticksAndAnnotations again - it's unnecessary and would overwrite `updates`
+        zoomPreviousPosition = undefined
+        console.log("dragTail")
         updateSubplots([0, 0, pw, ph]);
-
         // since we may have been redrawing some things during the drag, we may have
         // accumulated MathJax promises - wait for them before we relayout.
         Lib.syncOrAsync([
@@ -911,13 +949,10 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
         // put the subplot viewboxes back to default (Because we're going to)
         // be repositioning the data in the relayout. But DON'T call
         // ticksAndAnnotations again - it's unnecessary and would overwrite `updates`
-        console.log("DRAGTAIL")
         updateSubplots([0, 0, pw, ph]);
 
         // since we may have been redrawing some things during the drag, we may have
         // accumulated MathJax promises - wait for them before we relayout.
-        console.log("updates")
-        console.log(updates)
         Lib.syncOrAsync([
             Plots.previousPromises,
             function() {
@@ -932,6 +967,7 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
     // sharing an affected axis (including the one being dragged),
     // includes also scattergl and splom logic.
     function updateSubplots(viewBox) {
+        console.log(viewBox)
         var fullLayout = gd._fullLayout;
         var plotinfos = fullLayout._plots;
         var subplots = fullLayout._subplots.cartesian;
@@ -940,7 +976,7 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
         if(hasSplom) {
             Registry.subplotsRegistry.splom.drag(gd);
         }
-
+        
         if(hasScatterGl) {
             for(i = 0; i < subplots.length; i++) {
                 sp = plotinfos[subplots[i]];
@@ -974,7 +1010,6 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
 
                 var xScaleFactor2, yScaleFactor2;
                 var clipDx, clipDy;
-
                 if(editX2) {
                     xScaleFactor2 = xScaleFactor;
                     clipDx = ew ? viewBox[0] : getShift(xa, xScaleFactor2);
@@ -1023,6 +1058,8 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
                 // setTranslate and setScale do a lot of extra work
                 // when working independently, should perhaps combine
                 // them into a single routine.
+                console.log(clipDx, clipDy)
+                console.log(xScaleFactor2, yScaleFactor2)
                 sp.clipRect
                     .call(Drawing.setTranslate, clipDx, clipDy)
                     .call(Drawing.setScale, xScaleFactor2, yScaleFactor2);
@@ -1129,7 +1166,6 @@ function zoomAxRanges(axList, r0Fraction, r1Fraction, updates, linkedAxes) {
         var axi = axList[i];
         if(axi.fixedrange) continue;
 
-        console.log("again settting updates")
         if(axi.rangebreaks) {
             var isY = axi._id.charAt(0) === 'y';
             var r0F = isY ? (1 - r0Fraction) : r0Fraction;
@@ -1137,15 +1173,11 @@ function zoomAxRanges(axList, r0Fraction, r1Fraction, updates, linkedAxes) {
 
             updates[axi._name + '.range[0]'] = axi.l2r(axi.p2l(r0F * axi._length));
             updates[axi._name + '.range[1]'] = axi.l2r(axi.p2l(r1F * axi._length));
-            console.log("updates values B: ")
-            console.log(updates)
         } else {
             var axRangeLinear0 = axi._rl[0];
             var axRangeLinearSpan = axi._rl[1] - axRangeLinear0;
             updates[axi._name + '.range[0]'] = axi.l2r(axRangeLinear0 + axRangeLinearSpan * r0Fraction);
             updates[axi._name + '.range[1]'] = axi.l2r(axRangeLinear0 + axRangeLinearSpan * r1Fraction);
-            console.log("updates values A: ")
-            console.log(updates)
         }
     }
 
@@ -1173,14 +1205,15 @@ function dragAxList(axList, pix) {
                 ];
             } else {
                 axi.range = [
-                    axi.l2r(axi._rl[0] + pix / axi._m),
+                    axi.l2r(axi._rl[0] - pix / axi._m),
                     axi.l2r(axi._rl[1] - pix / axi._m)
                 ];
-                console.log("RANGE AFTER: " + axi.range)
             }
         }
     }
 }
+
+
 
 // common transform for dragging one end of an axis
 // d>0 is compressing scale (cursor is over the plot,
