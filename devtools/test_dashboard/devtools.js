@@ -183,7 +183,7 @@ var fuse = new Fuse(mocks, {
 var searchBar = document.getElementById('mocks-search');
 var mocksList = document.getElementById('mocks-list');
 var plotArea = document.getElementById('plots');
-Tabs.plotMock(1, "graph")
+Tabs.plotMock(0, "graph")
 
 searchBar.addEventListener('keyup', debounce(searchMocks, 250));
 
