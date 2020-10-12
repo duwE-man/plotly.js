@@ -92,6 +92,7 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
     var updates;
 
     function recomputeAxisLists() {
+        console.log("Recomputeaxis list")
         xa0 = plotinfo.xaxis;
         ya0 = plotinfo.yaxis;
         pw = xa0._length;
@@ -135,6 +136,8 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
     recomputeAxisLists();
 
     var cursor = getDragCursor(yActive + xActive, gd._fullLayout.dragmode, isMainDrag);
+    console.log("CURSOR")
+    console.log(cursor)
     var dragger = makeRectDragger(plotinfo, ns + ew + 'drag', cursor, x, y, w, h);
 
     // still need to make the element if the axes are disabled
@@ -181,8 +184,10 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
     
         }
         HTMLFormControlsCollection.lof
+        console.log(dragModeNow)
         if(freeMode(dragModeNow)) dragOptions.minDrag = 1;
         else dragOptions.minDrag = undefined;
+        console.log(dragOptions.minDrag)
 
         if(selectingOrDrawing(dragModeNow)) {
             dragOptions.xaxes = xaxes;
@@ -204,6 +209,7 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
                 // selection cache).
                 clearAndResetSelect();
             }
+            console.log("AFTER SOME SHIT CODE")
             if(!allFixedRanges) {
                 if(dragModeNow === 'zoom') {
                     dragOptions.moveFn = zoomMove;
@@ -219,8 +225,9 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
                     dragOptions.moveFn = plotDrag;
                     dragOptions.doneFn = dragTail;
                 } else if(dragModeNow === 'rightClickZoom'){
+                    console.log("USEFULL CODE")
                     zoomPrep(e, startX, startY);
-                    updates = {};
+                    //updates = {};
                     dragOptions.moveFn = plotZoom;
                     dragOptions.doneFn = plotZoomTail;
                 }
@@ -331,9 +338,11 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
     var zoomDragged;
 
     function zoomPrep(e, startX, startY) {
+        console.log("inside zoom preparation")
         var dragBBox = dragger.getBoundingClientRect();
         x0 = startX - dragBBox.left;
         y0 = startY - dragBBox.top;
+
         box = {l: x0, r: x0, w: 0, t: y0, b: y0, h: 0};
         lum = gd._hmpixcount ?
             (gd._hmlumcount / gd._hmpixcount) :
@@ -558,15 +567,18 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
         if(gd._transitioningWithDuration) {
             return;
         }
+        console.log("plotZooom")
         // prevent axis drawing from monkeying with margins until we're done
         gd._fullLayout._replotting = true;
         if(xActive === 'ew' || yActive === 'ns') {
             if(xActive) {
-                zoomAxList(xaxes, dx , 'x');
+                //zoomAxList(xaxes, dx , 'x');
+                rightClickZoomForAllAxes(xaxes, dx)
                 updateMatchedAxRange('x', updates);
             }
             if(yActive) {
-                zoomAxList(yaxes, dy, 'y');
+                rightClickZoomForAllAxes(yaxes, dy)
+                //zoomAxList(yaxes, dy, 'y');
                 updateMatchedAxRange('y', updates);
             }
             updateSubplots([0, 0, pw, ph]);
@@ -647,11 +659,48 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
         ticksAndAnnotations();
         gd.emit('plotly_relayouting', updates);
     }
+    function rightClickZoomForAllAxes(axList, mouseDelta){
+        let clientRect = getClientRect()
+
+        for(var i = 0, axListLength = axList.length; i < axListLength; i++) {
+            let axis = axList[i];
+            console.log(x0,y0)
+            switch (axis._attr) {
+                case "xaxis":
+                    console.log(mouseDelta)
+                    console.log(x0)
+                    /*axis.range = [
+                        axis.l2r(axis._rl[0] + (mouseDelta / axis._m)*(x0/clientRect.width)),
+                        axis.l2r(axis._rl[1] - (mouseDelta / axis._m)*((clientRect.width - x0 )/clientRect.width))
+                    ]*/
+                    let factor = mouseDelta/1000
+                    axis.range = [
+                        (axis._rl[0]-x0/ axis._m)*factor + x0/ axis._m,
+                        (axis._rl[1]-x0/ axis._m)*factor + x0/ axis._m
+                    ]
+                    break
+                case "yaxis":
+                    axis.range = [
+                        axis.l2r(axis._rl[0] + (mouseDelta / axis._m)*((clientRect.height - y0 )/clientRect.height)),
+                        axis.l2r(axis._rl[1] - (mouseDelta / axis._m)*(y0/clientRect.width))
+                    ]
+                    break
+                default:
+                    console.log("default")
+                    return
+            }
+        }
+    }
+
+    function getClientRect() {
+        return mainplot.draglayer.select('.nsewdrag').node().getBoundingClientRect()
+    }
 
     function zoomAxList(axList, pix , ax) {
-        var gbb = mainplot.draglayer.select('.nsewdrag').node().getBoundingClientRect();
-        for(var i = 0; i < axList.length; i++) {
+        let gbb = mainplot.draglayer.select('.nsewdrag').node().getBoundingClientRect();
+        for(var i = 0, axListLength = axList.length; i < axListLength; i++) {
             var axi = axList[i];
+            console.log(axi._attr)
             if(!axi.fixedrange) {
                 if(axi.rangebreaks) {
                     var p0 = 0;
@@ -665,7 +714,6 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
                         axi.l2r(axi._rl[1] - delta)
                     ];
                 } else {
-                    var gbb = mainplot.draglayer.select('.nsewdrag').node().getBoundingClientRect();
                     if (ax === "x"){
                         axi.range = [
                             axi.l2r(axi._rl[0] + (pix / axi._m)*(x0/gbb.width)),
