@@ -56718,7 +56718,6 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
                     dragOptions.doneFn = dragTail;
                 } else if(dragModeNow === 'rightClickZoom'){
                     zoomPrep(e, startX, startY);
-                    console.log("Cursor: " + cursor)
                     updates = {};
                     dragOptions.moveFn = plotZoom;
                     dragOptions.doneFn = plotZoomTail;
@@ -57052,7 +57051,7 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
     }
 
 
-    function plotZoom(dx, dy) { // GOTO
+    function plotZoom(dx, dy) {
         // If a transition is in progress, then disable any behavior:
         if(gd._transitioningWithDuration) {
             return;
@@ -57062,13 +57061,13 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
         if(xActive === 'ew' || yActive === 'ns') {
             if(xActive) {
                 zoomAxList(xaxes, dx , 'x');
-                updateMatchedAxRange('x', updates);// PLOTZOOM
+                updateMatchedAxRange('x', updates);
             }
             if(yActive) {
                 zoomAxList(yaxes, dy, 'y');
                 updateMatchedAxRange('y', updates);
             }
-            updateSubplots([dx, -dy, pw-dx, ph+dy]); // LABEL123
+            updateSubplots([0, 0, pw, ph]);
             ticksAndAnnotations();
             return;
         }
@@ -57198,7 +57197,6 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
         if(gd._transitioningWithDuration) {
             return;
         }
-        console.log("PLOT DRAG")
         // prevent axis drawing from monkeying with margins until we're done
         gd._fullLayout._replotting = true;
         if(xActive === 'ew' || yActive === 'ns') {
@@ -57429,7 +57427,6 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
         // be repositioning the data in the relayout. But DON'T call
         // ticksAndAnnotations again - it's unnecessary and would overwrite `updates`
         zoomPreviousPosition = undefined
-        console.log("dragTail")
         updateSubplots([0, 0, pw, ph]);
         // since we may have been redrawing some things during the drag, we may have
         // accumulated MathJax promises - wait for them before we relayout.
@@ -57465,7 +57462,6 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
     // sharing an affected axis (including the one being dragged),
     // includes also scattergl and splom logic.
     function updateSubplots(viewBox) {
-        console.log(viewBox)
         var fullLayout = gd._fullLayout;
         var plotinfos = fullLayout._plots;
         var subplots = fullLayout._subplots.cartesian;
@@ -57538,6 +57534,7 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
                 } else {
                     yScaleFactor2 = getLinkedScaleFactor(ya, xScaleFactor, yScaleFactor);
                     clipDy = scaleAndGetShift(ya, yScaleFactor2);
+                    
                 }
 
                 // don't scale at all if neither axis is scalable here
@@ -57548,7 +57545,6 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
                 // but if only one is, reset the other axis scaling
                 if(!xScaleFactor2) xScaleFactor2 = 1;
                 if(!yScaleFactor2) yScaleFactor2 = 1;
-
                 var plotDx = xa._offset - clipDx / xScaleFactor2;
                 var plotDy = ya._offset - clipDy / yScaleFactor2;
 
@@ -57556,8 +57552,6 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
                 // setTranslate and setScale do a lot of extra work
                 // when working independently, should perhaps combine
                 // them into a single routine.
-                console.log(clipDx, clipDy)
-                console.log(xScaleFactor2, yScaleFactor2)
                 sp.clipRect
                     .call(Drawing.setTranslate, clipDx, clipDy)
                     .call(Drawing.setScale, xScaleFactor2, yScaleFactor2);
