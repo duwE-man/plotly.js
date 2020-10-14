@@ -92,7 +92,6 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
     var updates;
 
     function recomputeAxisLists() {
-        console.log("Recomputeaxis list")
         xa0 = plotinfo.xaxis;
         ya0 = plotinfo.yaxis;
         pw = xa0._length;
@@ -136,8 +135,6 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
     recomputeAxisLists();
 
     var cursor = getDragCursor(yActive + xActive, gd._fullLayout.dragmode, isMainDrag);
-    console.log("CURSOR")
-    console.log(cursor)
     var dragger = makeRectDragger(plotinfo, ns + ew + 'drag', cursor, x, y, w, h);
 
     // still need to make the element if the axes are disabled
@@ -184,10 +181,8 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
     
         }
         HTMLFormControlsCollection.lof
-        console.log(dragModeNow)
         if(freeMode(dragModeNow)) dragOptions.minDrag = 1;
         else dragOptions.minDrag = undefined;
-        console.log(dragOptions.minDrag)
 
         if(selectingOrDrawing(dragModeNow)) {
             dragOptions.xaxes = xaxes;
@@ -209,7 +204,6 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
                 // selection cache).
                 clearAndResetSelect();
             }
-            console.log("AFTER SOME SHIT CODE")
             if(!allFixedRanges) {
                 if(dragModeNow === 'zoom') {
                     dragOptions.moveFn = zoomMove;
@@ -225,7 +219,6 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
                     dragOptions.moveFn = plotDrag;
                     dragOptions.doneFn = dragTail;
                 } else if(dragModeNow === 'rightClickZoom'){
-                    console.log("USEFULL CODE")
                     zoomPrep(e, startX, startY);
                     //updates = {};
                     dragOptions.moveFn = plotZoom;
@@ -567,7 +560,6 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
         if(gd._transitioningWithDuration) {
             return;
         }
-        console.log("plotZooom")
         // prevent axis drawing from monkeying with margins until we're done
         gd._fullLayout._replotting = true;
         if(xActive === 'ew' || yActive === 'ns') {
@@ -581,7 +573,8 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
                 //zoomAxList(yaxes, dy, 'y');
                 updateMatchedAxRange('y', updates);
             }
-            updateSubplots([0, 0, pw, ph]);
+            console.log(pw,ph)
+            updateSubplotContent([xActive ? -dx : 0, yActive ? -dy : 0, pw, ph])
             ticksAndAnnotations();
             return;
         }
@@ -655,34 +648,27 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
 
         updateMatchedAxRange('x');
         updateMatchedAxRange('y');
-        updateSubplots([xStart, yStart, pw - dx, ph - dy]);
+        updateSubplotContent([xStart, yStart, pw - dx, ph - dy]);
         ticksAndAnnotations();
         gd.emit('plotly_relayouting', updates);
     }
+
     function rightClickZoomForAllAxes(axList, mouseDelta){
         let clientRect = getClientRect()
 
         for(var i = 0, axListLength = axList.length; i < axListLength; i++) {
             let axis = axList[i];
-            console.log(x0,y0)
             switch (axis._attr) {
                 case "xaxis":
-                    console.log(mouseDelta)
-                    console.log(x0)
-                    /*axis.range = [
+                    axis.range = [
                         axis.l2r(axis._rl[0] + (mouseDelta / axis._m)*(x0/clientRect.width)),
                         axis.l2r(axis._rl[1] - (mouseDelta / axis._m)*((clientRect.width - x0 )/clientRect.width))
-                    ]*/
-                    let factor = mouseDelta/1000
-                    axis.range = [
-                        (axis._rl[0]-x0/ axis._m)*factor + x0/ axis._m,
-                        (axis._rl[1]-x0/ axis._m)*factor + x0/ axis._m
                     ]
                     break
                 case "yaxis":
                     axis.range = [
                         axis.l2r(axis._rl[0] + (mouseDelta / axis._m)*((clientRect.height - y0 )/clientRect.height)),
-                        axis.l2r(axis._rl[1] - (mouseDelta / axis._m)*(y0/clientRect.width))
+                        axis.l2r(axis._rl[1] - (mouseDelta / axis._m)*(y0/clientRect.height))
                     ]
                     break
                 default:
@@ -696,11 +682,112 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
         return mainplot.draglayer.select('.nsewdrag').node().getBoundingClientRect()
     }
 
+    function updateSubplotContent(viewBox) {
+        var fullLayout = gd._fullLayout;
+        var plotinfos = fullLayout._plots;
+        var subplots = fullLayout._subplots.cartesian;
+        var i, sp, xa, ya;
+
+        if(hasSVG) {
+            var xScaleFactor = viewBox[2] / xa0._length;
+            var yScaleFactor = viewBox[3] / ya0._length;
+
+            for(i = 0; i < subplots.length; i++) {
+                sp = plotinfos[subplots[i]];
+                xa = sp.xaxis;
+                ya = sp.yaxis;
+
+                var editX2 = editX && !xa.fixedrange && xaHash[xa._id];
+                var editY2 = editY && !ya.fixedrange && yaHash[ya._id];
+
+                console.log(editX2)
+
+                var xScaleFactor2, yScaleFactor2;
+                var clipDx, clipDy;
+                if(editX2) {
+                    console.log(xScaleFactor)
+                    xScaleFactor2 = xScaleFactor;
+                    clipDx = ew ? viewBox[0] : getShift(xa, xScaleFactor2);
+                    console.log(clipDx)
+                } else if(matches.xaHash[xa._id]) {
+                    xScaleFactor2 = xScaleFactor;
+                    clipDx = viewBox[0] * xa._length / xa0._length;
+                } else if(matches.yaHash[xa._id]) {
+                    xScaleFactor2 = yScaleFactor;
+                    clipDx = yActive === 'ns' ?
+                        -viewBox[1] * xa._length / ya0._length :
+                        getShift(xa, xScaleFactor2, {n: 'top', s: 'bottom'}[yActive]);
+                } else {
+                    xScaleFactor2 = getLinkedScaleFactor(xa, xScaleFactor, yScaleFactor);
+                    clipDx = scaleAndGetShift(xa, xScaleFactor2);
+                }
+
+                if(editY2) {
+                    yScaleFactor2 = yScaleFactor;
+                    clipDy = ns ? viewBox[1] : getShift(ya, yScaleFactor2);
+                    console.log(clipDy)
+                } else if(matches.yaHash[ya._id]) {
+                    yScaleFactor2 = yScaleFactor;
+                    clipDy = viewBox[1] * ya._length / ya0._length;
+                } else if(matches.xaHash[ya._id]) {
+                    yScaleFactor2 = xScaleFactor;
+                    clipDy = xActive === 'ew' ?
+                        -viewBox[0] * ya._length / xa0._length :
+                        getShift(ya, yScaleFactor2, {e: 'right', w: 'left'}[xActive]);
+                } else {
+                    yScaleFactor2 = getLinkedScaleFactor(ya, xScaleFactor, yScaleFactor);
+                    clipDy = scaleAndGetShift(ya, yScaleFactor2);
+                    
+                }
+
+                // don't scale at all if neither axis is scalable here
+                if(!xScaleFactor2 && !yScaleFactor2) {
+                    continue;
+                }
+
+                // but if only one is, reset the other axis scaling
+                if(!xScaleFactor2) xScaleFactor2 = 1;
+                if(!yScaleFactor2) yScaleFactor2 = 1;
+                var plotDx = xa._offset - clipDx / xScaleFactor2;
+                var plotDy = ya._offset - clipDy / yScaleFactor2;
+
+                console.log(clipDx)
+                console.log(plotDx)
+
+                // TODO could be more efficient here:
+                // setTranslate and setScale do a lot of extra work
+                // when working independently, should perhaps combine
+                // them into a single routine.
+                sp.clipRect
+                    .call(Drawing.setTranslate, clipDx, clipDy)
+                    .call(Drawing.setScale, xScaleFactor2, yScaleFactor2);
+
+                sp.plot
+                    .call(Drawing.setTranslate, plotDx, plotDy)
+                    .call(Drawing.setScale, 1 / xScaleFactor2, 1 / yScaleFactor2);
+
+                // apply an inverse scale to individual points to counteract
+                // the scale of the trace group.
+                // apply only when scale changes, as adjusting the scale of
+                // all the points can be expansive.
+                if(xScaleFactor2 !== sp.xScaleFactor || yScaleFactor2 !== sp.yScaleFactor) {
+                    Drawing.setPointGroupScale(sp.zoomScalePts, xScaleFactor2, yScaleFactor2);
+                    Drawing.setTextPointsScale(sp.zoomScaleTxt, xScaleFactor2, yScaleFactor2);
+                }
+
+                Drawing.hideOutsideRangePoints(sp.clipOnAxisFalseTraces, sp);
+
+                // update x/y scaleFactor stash
+                sp.xScaleFactor = xScaleFactor2;
+                sp.yScaleFactor = yScaleFactor2;
+            }
+        }
+    }
+
     function zoomAxList(axList, pix , ax) {
         let gbb = mainplot.draglayer.select('.nsewdrag').node().getBoundingClientRect();
         for(var i = 0, axListLength = axList.length; i < axListLength; i++) {
             var axi = axList[i];
-            console.log(axi._attr)
             if(!axi.fixedrange) {
                 if(axi.rangebreaks) {
                     var p0 = 0;
@@ -833,8 +920,14 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
         updateMatchedAxRange('x');
         updateMatchedAxRange('y');
         updateSubplots([xStart, yStart, pw - dx, ph - dy]);
-        ticksAndAnnotations();
-        gd.emit('plotly_relayouting', updates);
+        //ticksAndAnnotations();
+        Lib.syncOrAsync([
+            Plots.previousPromises,
+            function() {
+                gd._fullLayout._replotting = false;
+                Registry.call('_guiRelayout', gd, updates);
+            }
+        ], gd);
     }
 
     function updateMatchedAxRange(axLetter, out) {
