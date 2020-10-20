@@ -564,18 +564,15 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
         gd._fullLayout._replotting = true;
         if(xActive === 'ew' || yActive === 'ns') {
             if(xActive) {
-                //zoomAxList(xaxes, dx , 'x');
                 rightClickZoomForAllAxes(xaxes, dx)
                 updateMatchedAxRange('x', updates);
             }
             if(yActive) {
                 rightClickZoomForAllAxes(yaxes, dy)
-                //zoomAxList(yaxes, dy, 'y');
                 updateMatchedAxRange('y', updates);
             }
-            console.log(pw,ph)
-            updateSubplotContent([xActive ? -dx : 0, yActive ? -dy : 0, pw, ph])
-            ticksAndAnnotations();
+            updateSubplotContent([0, yActive ? -dy : 0, pw, ph])
+            annotationsForRightClickZoom()
             return;
         }
         
@@ -648,8 +645,8 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
 
         updateMatchedAxRange('x');
         updateMatchedAxRange('y');
-        updateSubplotContent([xStart, yStart, pw - dx, ph - dy]);
-        ticksAndAnnotations();
+        updateSubplotContent([0, 0, pw, ph]);
+        annotationsForRightClickZoom();
         gd.emit('plotly_relayouting', updates);
     }
 
@@ -657,7 +654,7 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
         let clientRect = getClientRect()
 
         for(var i = 0, axListLength = axList.length; i < axListLength; i++) {
-            let axis = axList[i];
+            let axis = axList[i]
             switch (axis._attr) {
                 case "xaxis":
                     axis.range = [
@@ -672,7 +669,7 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
                     ]
                     break
                 default:
-                    console.log("default")
+                    // not
                     return
             }
         }
@@ -680,6 +677,29 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
 
     function getClientRect() {
         return mainplot.draglayer.select('.nsewdrag').node().getBoundingClientRect()
+    }
+
+    function annotationsForRightClickZoom() {
+        var activeAxIds = [];
+        var i;
+
+        pushActiveAxIds(xaxes);
+        pushActiveAxIds(yaxes);
+
+        updates = {};
+        for(i = 0; i < activeAxIds.length; i++) {
+            let ax = getFromId(gd, activeAxIds[i]);
+            Axes.drawOne(gd, ax, {skipTitle: true});
+            updates[ax._name + '.range[0]'] = ax.range[0];
+            updates[ax._name + '.range[1]'] = ax.range[1];
+        }
+        Axes.redrawComponents(gd, activeAxIds);
+
+        function pushActiveAxIds(axList) {
+            for(i = 0; i < axList.length; i++) {
+                if(!axList[i].fixedrange) activeAxIds.push(axList[i]._id);
+            }
+        }
     }
 
     function updateSubplotContent(viewBox) {
@@ -705,10 +725,10 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
                 var xScaleFactor2, yScaleFactor2;
                 var clipDx, clipDy;
                 if(editX2) {
-                    console.log(xScaleFactor)
+                    console.log("FUCK")
                     xScaleFactor2 = xScaleFactor;
                     clipDx = ew ? viewBox[0] : getShift(xa, xScaleFactor2);
-                    console.log(clipDx)
+                    console.log(xa._length)
                 } else if(matches.xaHash[xa._id]) {
                     xScaleFactor2 = xScaleFactor;
                     clipDx = viewBox[0] * xa._length / xa0._length;
@@ -969,7 +989,10 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
                 if(!axList[i].fixedrange) activeAxIds.push(axList[i]._id);
             }
         }
-
+        console.log("ticksAndAnotations")
+        console.log(xaxes)
+        console.log(links.xaxes)
+        console.log(matches.xaxes)
         if(editX) {
             pushActiveAxIds(xaxes);
             pushActiveAxIds(links.xaxes);
