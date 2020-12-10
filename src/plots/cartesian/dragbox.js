@@ -563,13 +563,11 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
         gd._fullLayout._replotting = true;
         if(xActive === 'ew' || yActive === 'ns') {
             if(xActive) {
-                //zoomAxList(xaxes, dx , 'x');
                 rightClickZoomForAllAxes(xaxes, dx)
                 updateMatchedAxRange('x', updates);
             }
             if(yActive) {
                 rightClickZoomForAllAxes(yaxes, dy)
-                //zoomAxList(yaxes, dy, 'y');
                 updateMatchedAxRange('y', updates);
             }
             updateSubplotContent([0, 0, pw, ph])
@@ -646,8 +644,8 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
 
         updateMatchedAxRange('x');
         updateMatchedAxRange('y');
-        updateSubplotContent([xStart, yStart, pw - dx, ph - dy]);
-        ticksAndAnnotations();
+        updateSubplotContent([0, 0, pw, ph]);
+        annotationsForRightClickZoom();
         gd.emit('plotly_relayouting', updates);
     }
 
@@ -655,7 +653,7 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
         let clientRect = getClientRect()
 
         for(var i = 0, axListLength = axList.length; i < axListLength; i++) {
-            let axis = axList[i];
+            let axis = axList[i]
             switch (axis._attr) {
                 case "xaxis":
                     axis.range = [
@@ -677,6 +675,29 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
 
     function getClientRect() {
         return mainplot.draglayer.select('.nsewdrag').node().getBoundingClientRect()
+    }
+
+    function annotationsForRightClickZoom() {
+        var activeAxIds = [];
+        var i;
+
+        pushActiveAxIds(xaxes);
+        pushActiveAxIds(yaxes);
+
+        updates = {};
+        for(i = 0; i < activeAxIds.length; i++) {
+            let ax = getFromId(gd, activeAxIds[i]);
+            Axes.drawOne(gd, ax, {skipTitle: true});
+            updates[ax._name + '.range[0]'] = ax.range[0];
+            updates[ax._name + '.range[1]'] = ax.range[1];
+        }
+        Axes.redrawComponents(gd, activeAxIds);
+
+        function pushActiveAxIds(axList) {
+            for(i = 0; i < axList.length; i++) {
+                if(!axList[i].fixedrange) activeAxIds.push(axList[i]._id);
+            }
+        }
     }
 
     function updateSubplotContent(viewBox) {
@@ -958,7 +979,6 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
                 if(!axList[i].fixedrange) activeAxIds.push(axList[i]._id);
             }
         }
-
         if(editX) {
             pushActiveAxIds(xaxes);
             pushActiveAxIds(links.xaxes);
