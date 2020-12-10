@@ -331,7 +331,6 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
     var zoomDragged;
 
     function zoomPrep(e, startX, startY) {
-        console.log("inside zoom preparation")
         var dragBBox = dragger.getBoundingClientRect();
         x0 = startX - dragBBox.left;
         y0 = startY - dragBBox.top;
@@ -573,8 +572,7 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
                 //zoomAxList(yaxes, dy, 'y');
                 updateMatchedAxRange('y', updates);
             }
-            console.log(pw,ph)
-            updateSubplotContent([xActive ? -dx : 0, yActive ? -dy : 0, pw, ph])
+            updateSubplotContent([0, 0, pw, ph])
             ticksAndAnnotations();
             return;
         }
@@ -661,8 +659,8 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
             switch (axis._attr) {
                 case "xaxis":
                     axis.range = [
-                        axis.l2r(axis._rl[0] + (mouseDelta / axis._m)*(x0/clientRect.width)),
-                        axis.l2r(axis._rl[1] - (mouseDelta / axis._m)*((clientRect.width - x0 )/clientRect.width))
+                        axis.l2r(axis._rl[0] + (mouseDelta / axis._m*2)*(x0/clientRect.width)),
+                        axis.l2r(axis._rl[1] - (mouseDelta / axis._m*2)*((clientRect.width - x0 )/clientRect.width))
                     ]
                     break
                 case "yaxis":
@@ -672,7 +670,6 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
                     ]
                     break
                 default:
-                    console.log("default")
                     return
             }
         }
@@ -700,15 +697,11 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
                 var editX2 = editX && !xa.fixedrange && xaHash[xa._id];
                 var editY2 = editY && !ya.fixedrange && yaHash[ya._id];
 
-                console.log(editX2)
-
                 var xScaleFactor2, yScaleFactor2;
                 var clipDx, clipDy;
                 if(editX2) {
-                    console.log(xScaleFactor)
                     xScaleFactor2 = xScaleFactor;
                     clipDx = ew ? viewBox[0] : getShift(xa, xScaleFactor2);
-                    console.log(clipDx)
                 } else if(matches.xaHash[xa._id]) {
                     xScaleFactor2 = xScaleFactor;
                     clipDx = viewBox[0] * xa._length / xa0._length;
@@ -725,7 +718,6 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
                 if(editY2) {
                     yScaleFactor2 = yScaleFactor;
                     clipDy = ns ? viewBox[1] : getShift(ya, yScaleFactor2);
-                    console.log(clipDy)
                 } else if(matches.yaHash[ya._id]) {
                     yScaleFactor2 = yScaleFactor;
                     clipDy = viewBox[1] * ya._length / ya0._length;
@@ -750,9 +742,6 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
                 if(!yScaleFactor2) yScaleFactor2 = 1;
                 var plotDx = xa._offset - clipDx / xScaleFactor2;
                 var plotDy = ya._offset - clipDy / yScaleFactor2;
-
-                console.log(clipDx)
-                console.log(plotDx)
 
                 // TODO could be more efficient here:
                 // setTranslate and setScale do a lot of extra work
