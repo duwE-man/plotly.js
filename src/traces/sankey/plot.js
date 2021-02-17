@@ -1,14 +1,6 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
-var d3 = require('d3');
+var d3 = require('@plotly/d3');
 var render = require('./render');
 var Fx = require('../../components/fx');
 var Color = require('../../components/color');
@@ -292,10 +284,14 @@ module.exports = function plot(gd, calcData) {
         var hovertemplateLabels = {valueLabel: d3.format(d.valueFormat)(d.node.value) + d.valueSuffix};
         d.node.fullData = d.node.trace;
 
+        gd._fullLayout._calcInverseTransform(gd);
+        var scaleX = gd._fullLayout._invScaleX;
+        var scaleY = gd._fullLayout._invScaleY;
+
         var tooltip = Fx.loneHover({
-            x0: hoverCenterX0,
-            x1: hoverCenterX1,
-            y: hoverCenterY,
+            x0: scaleX * hoverCenterX0,
+            x1: scaleX * hoverCenterX1,
+            y: scaleY * hoverCenterY,
             name: d3.format(d.valueFormat)(d.node.value) + d.valueSuffix,
             text: [
                 d.node.label,

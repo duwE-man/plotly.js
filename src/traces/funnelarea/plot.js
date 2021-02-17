@@ -1,17 +1,11 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
-var d3 = require('d3');
+var d3 = require('@plotly/d3');
 
 var Drawing = require('../../components/drawing');
 var Lib = require('../../lib');
+var strScale = Lib.strScale;
+var strTranslate = Lib.strTranslate;
 var svgTextUtils = require('../../lib/svg_text_utils');
 
 var barPlot = require('../bar/plot');
@@ -167,9 +161,9 @@ module.exports = function plot(gd, cdModule) {
                 var transform = positionTitleOutside(cd0, fullLayout._size);
 
                 titleText.attr('transform',
-                    'translate(' + transform.x + ',' + transform.y + ')' +
-                    (transform.scale < 1 ? ('scale(' + transform.scale + ')') : '') +
-                    'translate(' + transform.tx + ',' + transform.ty + ')');
+                    strTranslate(transform.x, transform.y) +
+                    strScale(Math.min(1, transform.scale)) +
+                    strTranslate(transform.tx, transform.ty));
             });
         });
     });

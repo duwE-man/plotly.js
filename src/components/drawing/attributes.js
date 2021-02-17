@@ -1,12 +1,3 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
-
 'use strict';
 
 exports.dash = {
@@ -17,7 +8,6 @@ exports.dash = {
     // dash lengths in px, and it will be honored
     values: ['solid', 'dot', 'dash', 'longdash', 'dashdot', 'longdashdot'],
     dflt: 'solid',
-    role: 'style',
     editType: 'style',
     description: [
         'Sets the dash style of lines. Set to a dash type string',

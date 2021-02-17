@@ -1,11 +1,3 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
 var handleAxisDefaults = require('./axis_defaults');
@@ -47,6 +39,7 @@ function mimickAxisDefaults(traceIn, traceOut, fullLayout, dfltColor) {
             calendar: traceOut.calendar,
             dfltColor: dfltColor,
             bgColor: fullLayout.paper_bgcolor,
+            autotypenumbersDflt: fullLayout.autotypenumbers,
             fullLayout: fullLayout
         };
 

@@ -1,11 +1,3 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
 var carpetAttrs = require('./attributes');
@@ -51,6 +43,7 @@ module.exports = function handleAxisDefaults(containerIn, containerOut, options)
     }
 
     // now figure out type and do some more initialization
+    coerce('autotypenumbers', options.autotypenumbersDflt);
     var axType = coerce('type');
     if(axType === '-') {
         if(options.data) setAutoType(containerOut, options.data);
@@ -78,6 +71,7 @@ module.exports = function handleAxisDefaults(containerIn, containerOut, options)
     coerce('separatethousands');
     coerce('tickformat');
     coerce('exponentformat');
+    coerce('minexponent');
     coerce('showexponent');
     coerce('categoryorder');
 
@@ -186,6 +180,7 @@ module.exports = function handleAxisDefaults(containerIn, containerOut, options)
         delete containerOut.tickangle;
         delete containerOut.showexponent;
         delete containerOut.exponentformat;
+        delete containerOut.minexponent;
         delete containerOut.tickformat;
         delete containerOut.showticksuffix;
         delete containerOut.showtickprefix;
@@ -217,5 +212,7 @@ function setAutoType(ax, data) {
     var calAttr = axLetter + 'calendar';
     var calendar = ax[calAttr];
 
-    ax.type = autoType(data, calendar);
+    ax.type = autoType(data, calendar, {
+        autotypenumbers: ax.autotypenumbers
+    });
 }

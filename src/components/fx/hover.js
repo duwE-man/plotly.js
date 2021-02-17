@@ -1,18 +1,12 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
-var d3 = require('d3');
+var d3 = require('@plotly/d3');
 var isNumeric = require('fast-isnumeric');
 var tinycolor = require('tinycolor2');
 
 var Lib = require('../../lib');
+var strTranslate = Lib.strTranslate;
+var strRotate = Lib.strRotate;
 var Events = require('../../lib/events');
 var svgTextUtils = require('../../lib/svg_text_utils');
 var overrideCursor = require('../../lib/override_cursor');
@@ -192,7 +186,9 @@ exports.loneHover = function loneHover(hoverItems, opts) {
             d.offset -= anchor;
         });
 
-    alignHoverText(hoverLabel, fullOpts.rotateLabels);
+    var scaleX = opts.gd._fullLayout._invScaleX;
+    var scaleY = opts.gd._fullLayout._invScaleY;
+    alignHoverText(hoverLabel, fullOpts.rotateLabels, scaleX, scaleY);
 
     return multiHover ? hoverLabel : hoverLabel.node();
 };
@@ -331,10 +327,22 @@ function _hover(gd, evt, subplot, noHoverEvent) {
                 return;
             }
 
-            var dbb = evt.target.getBoundingClientRect();
+            // Discover event target, traversing open shadow roots.
+            var target = evt.composedPath && evt.composedPath()[0];
+            if(!target) {
+                // Fallback for browsers not supporting composedPath
+                target = evt.target;
+            }
+            var dbb = target.getBoundingClientRect();
 
             xpx = evt.clientX - dbb.left;
             ypx = evt.clientY - dbb.top;
+
+            fullLayout._calcInverseTransform(gd);
+            var transformedCoords = Lib.apply3DTransform(fullLayout._invTransform)(xpx, ypx);
+
+            xpx = transformedCoords[0];
+            ypx = transformedCoords[1];
 
             // in case hover was called from mouseout into hovertext,
             // it's possible you're not actually over the plot anymore
@@ -716,10 +724,8 @@ function _hover(gd, evt, subplot, noHoverEvent) {
 
     if(!helpers.isUnifiedHover(hovermode)) {
         hoverAvoidOverlaps(hoverLabels, rotateLabels ? 'xa' : 'ya', fullLayout);
-        alignHoverText(hoverLabels, rotateLabels);
-    }
-
-    // TODO: tagName hack is needed to appease geo.js's hack of using evt.target=true
+        alignHoverText(hoverLabels, rotateLabels, fullLayout._invScaleX, fullLayout._invScaleY);
+    }    // TODO: tagName hack is needed to appease geo.js's hack of using evt.target=true
     // we should improve the "fx" API so other plots can use it without these hack.
     if(evt.target && evt.target.tagName) {
         var hasClickToShow = Registry.getComponentMethod('annotations', 'hasClickToShow')(gd, newhoverdata);
@@ -960,7 +966,7 @@ function createHoverText(hoverData, opts, gd) {
             Drawing.setClipUrl(ltext, clipPath ? clipId : null, gd);
         }
 
-        label.attr('transform', 'translate(' + lx + ',' + ly + ')');
+        label.attr('transform', strTranslate(lx, ly));
 
         // remove the "close but not quite" points
         // because of error bars, only take up to a space
@@ -1068,7 +1074,7 @@ function createHoverText(hoverData, opts, gd) {
                 ly = outerHeight - txHeight;
             }
         }
-        legendContainer.attr('transform', 'translate(' + lx + ',' + ly + ')');
+        legendContainer.attr('transform', strTranslate(lx, ly));
 
         return legendContainer;
     }
@@ -1103,8 +1109,13 @@ function createHoverText(hoverData, opts, gd) {
     hoverLabels.each(function(d) {
         var g = d3.select(this).attr('transform', '');
 
+        var dColor = d.color;
+        if(Array.isArray(dColor)) {
+            dColor = dColor[d.eventData[0].pointNumber];
+        }
+
         // combine possible non-opaque trace color with bgColor
-        var color0 = d.bgcolor || d.color;
+        var color0 = d.bgcolor || dColor;
         // color for 'nums' part of the label
         var numsColor = Color.combine(
             Color.opacity(color0) ? color0 : Color.defaultLine,
@@ -1112,7 +1123,7 @@ function createHoverText(hoverData, opts, gd) {
         );
         // color for 'name' part of the label
         var nameColor = Color.combine(
-            Color.opacity(d.color) ? d.color : Color.defaultLine,
+            Color.opacity(dColor) ? dColor : Color.defaultLine,
             bgColor
         );
         // find a contrasting color for border and text
@@ -1212,8 +1223,8 @@ function createHoverText(hoverData, opts, gd) {
 
         tx.attr('text-anchor', d.anchor);
         if(tx2width) tx2.attr('text-anchor', d.anchor);
-        g.attr('transform', 'translate(' + htx + ',' + hty + ')' +
-            (rotateLabels ? 'rotate(' + YANGLE + ')' : ''));
+        g.attr('transform', strTranslate(htx, hty) +
+            (rotateLabels ? strRotate(YANGLE) : ''));
     });
 
     return hoverLabels;
@@ -1293,7 +1304,7 @@ function getHoverLabelText(d, showCommonLabel, hovermode, fullLayout, t0, g) {
 
 // Make groups of touching points, and within each group
 // move each point so that no labels overlap, but the average
-// label position is the same as it was before moving. Indicentally,
+// label position is the same as it was before moving. Incidentally,
 // this is equivalent to saying all the labels are on equal linear
 // springs about their initial position. Initially, each point is
 // its own group, but as we find overlaps we will clump the points.
@@ -1472,7 +1483,10 @@ function hoverAvoidOverlaps(hoverLabels, axKey, fullLayout) {
     }
 }
 
-function alignHoverText(hoverLabels, rotateLabels) {
+function alignHoverText(hoverLabels, rotateLabels, scaleX, scaleY) {
+    var pX = function(x) { return x * scaleX; };
+    var pY = function(y) { return y * scaleY; };
+
     // finally set the text positioning relative to the data and draw the
     // box around it
     hoverLabels.each(function(d) {
@@ -1488,7 +1502,8 @@ function alignHoverText(hoverLabels, rotateLabels) {
         var offsetX = 0;
         var offsetY = d.offset;
 
-        if(anchor === 'middle') {
+        var isMiddle = anchor === 'middle';
+        if(isMiddle) {
             txx -= d.tx2width / 2;
             tx2x += d.txwidth / 2 + HOVERTEXTPAD;
         }
@@ -1497,49 +1512,50 @@ function alignHoverText(hoverLabels, rotateLabels) {
             offsetX = d.offset * YSHIFTX;
         }
 
-        g.select('path').attr('d', anchor === 'middle' ?
+        g.select('path')
+            .attr('d', isMiddle ?
             // middle aligned: rect centered on data
-            ('M-' + (d.bx / 2 + d.tx2width / 2) + ',' + (offsetY - d.by / 2) +
-              'h' + d.bx + 'v' + d.by + 'h-' + d.bx + 'Z') :
+            ('M-' + pX(d.bx / 2 + d.tx2width / 2) + ',' + pY(offsetY - d.by / 2) +
+              'h' + pX(d.bx) + 'v' + pY(d.by) + 'h-' + pX(d.bx) + 'Z') :
             // left or right aligned: side rect with arrow to data
-            ('M0,0L' + (horzSign * HOVERARROWSIZE + offsetX) + ',' + (HOVERARROWSIZE + offsetY) +
-                'v' + (d.by / 2 - HOVERARROWSIZE) +
-                'h' + (horzSign * d.bx) +
-                'v-' + d.by +
-                'H' + (horzSign * HOVERARROWSIZE + offsetX) +
-                'V' + (offsetY - HOVERARROWSIZE) +
+            ('M0,0L' + pX(horzSign * HOVERARROWSIZE + offsetX) + ',' + pY(HOVERARROWSIZE + offsetY) +
+                'v' + pY(d.by / 2 - HOVERARROWSIZE) +
+                'h' + pX(horzSign * d.bx) +
+                'v-' + pY(d.by) +
+                'H' + pX(horzSign * HOVERARROWSIZE + offsetX) +
+                'V' + pY(offsetY - HOVERARROWSIZE) +
                 'Z'));
 
-        var posX = txx + offsetX;
+        var posX = offsetX + txx;
         var posY = offsetY + d.ty0 - d.by / 2 + HOVERTEXTPAD;
         var textAlign = d.textAlign || 'auto';
 
         if(textAlign !== 'auto') {
             if(textAlign === 'left' && anchor !== 'start') {
                 tx.attr('text-anchor', 'start');
-                posX = anchor === 'middle' ?
+                posX = isMiddle ?
                     -d.bx / 2 - d.tx2width / 2 + HOVERTEXTPAD :
                     -d.bx - HOVERTEXTPAD;
             } else if(textAlign === 'right' && anchor !== 'end') {
                 tx.attr('text-anchor', 'end');
-                posX = anchor === 'middle' ?
+                posX = isMiddle ?
                     d.bx / 2 - d.tx2width / 2 - HOVERTEXTPAD :
                     d.bx + HOVERTEXTPAD;
             }
         }
 
-        tx.call(svgTextUtils.positionText, posX, posY);
+        tx.call(svgTextUtils.positionText, pX(posX), pY(posY));
 
         if(d.tx2width) {
             g.select('text.name')
                 .call(svgTextUtils.positionText,
-                    tx2x + alignShift * HOVERTEXTPAD + offsetX,
-                    offsetY + d.ty0 - d.by / 2 + HOVERTEXTPAD);
+                    pX(tx2x + alignShift * HOVERTEXTPAD + offsetX),
+                    pY(offsetY + d.ty0 - d.by / 2 + HOVERTEXTPAD));
             g.select('rect')
                 .call(Drawing.setRect,
-                    tx2x + (alignShift - 1) * d.tx2width / 2 + offsetX,
-                    offsetY - d.by / 2 - 1,
-                    d.tx2width, d.by + 2);
+                    pX(tx2x + (alignShift - 1) * d.tx2width / 2 + offsetX),
+                    pY(offsetY - d.by / 2 - 1),
+                    pX(d.tx2width), pY(d.by + 2));
         }
     });
 }

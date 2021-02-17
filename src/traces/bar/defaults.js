@@ -1,11 +1,3 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
 var Lib = require('../../lib');
@@ -13,8 +5,9 @@ var Color = require('../../components/color');
 var Registry = require('../../registry');
 
 var handleXYDefaults = require('../scatter/xy_defaults');
+var handlePeriodDefaults = require('../scatter/period_defaults');
 var handleStyleDefaults = require('./style_defaults');
-var getAxisGroup = require('../../plots/cartesian/axis_ids').getAxisGroup;
+var getAxisGroup = require('../../plots/cartesian/constraints').getAxisGroup;
 var attributes = require('./attributes');
 
 var coerceFont = Lib.coerceFont;
@@ -29,6 +22,8 @@ function supplyDefaults(traceIn, traceOut, defaultColor, layout) {
         traceOut.visible = false;
         return;
     }
+
+    handlePeriodDefaults(traceIn, traceOut, layout, coerce);
 
     coerce('orientation', (traceOut.x && !traceOut.y) ? 'h' : 'v');
     coerce('base');

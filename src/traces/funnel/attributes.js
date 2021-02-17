@@ -1,11 +1,3 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
 var barAttrs = require('../bar/attributes');
@@ -25,6 +17,13 @@ module.exports = {
     y0: barAttrs.y0,
     dy: barAttrs.dy,
 
+    xperiod: barAttrs.xperiod,
+    yperiod: barAttrs.yperiod,
+    xperiod0: barAttrs.xperiod0,
+    yperiod0: barAttrs.yperiod0,
+    xperiodalignment: barAttrs.xperiodalignment,
+    yperiodalignment: barAttrs.yperiodalignment,
+
     hovertext: barAttrs.hovertext,
     hovertemplate: hovertemplateAttrs({}, {
         keys: constants.eventDataKeys
@@ -38,7 +37,6 @@ module.exports = {
         valType: 'flaglist',
         flags: ['label', 'text', 'percent initial', 'percent previous', 'percent total', 'value'],
         extras: ['none'],
-        role: 'info',
         editType: 'plot',
         arrayOk: false,
         description: [
@@ -82,7 +80,6 @@ module.exports = {
     connector: {
         fillcolor: {
             valType: 'color',
-            role: 'style',
             editType: 'style',
             description: [
                 'Sets the fill color.'
@@ -100,7 +97,6 @@ module.exports = {
         visible: {
             valType: 'boolean',
             dflt: true,
-            role: 'info',
             editType: 'plot',
             description: [
                 'Determines if connector regions and lines are drawn.'

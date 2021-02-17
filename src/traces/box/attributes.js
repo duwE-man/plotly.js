@@ -1,11 +1,3 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
 var scatterAttrs = require('../scatter/attributes');
@@ -36,7 +28,6 @@ module.exports = {
     },
     x0: {
         valType: 'any',
-        role: 'info',
         editType: 'calc+clearAxisTypes',
         description: [
             'Sets the x coordinate for single-box traces',
@@ -47,7 +38,6 @@ module.exports = {
     },
     y0: {
         valType: 'any',
-        role: 'info',
         editType: 'calc+clearAxisTypes',
         description: [
             'Sets the y coordinate for single-box traces',
@@ -59,7 +49,6 @@ module.exports = {
 
     dx: {
         valType: 'number',
-        role: 'info',
         editType: 'calc',
         description: [
             'Sets the x coordinate step for multi-box traces',
@@ -68,7 +57,6 @@ module.exports = {
     },
     dy: {
         valType: 'number',
-        role: 'info',
         editType: 'calc',
         description: [
             'Sets the y coordinate step for multi-box traces',
@@ -76,9 +64,15 @@ module.exports = {
         ].join(' ')
     },
 
+    xperiod: scatterAttrs.xperiod,
+    yperiod: scatterAttrs.yperiod,
+    xperiod0: scatterAttrs.xperiod0,
+    yperiod0: scatterAttrs.yperiod0,
+    xperiodalignment: scatterAttrs.xperiodalignment,
+    yperiodalignment: scatterAttrs.yperiodalignment,
+
     name: {
         valType: 'string',
-        role: 'info',
         editType: 'calc+clearAxisTypes',
         description: [
             'Sets the trace name.',
@@ -91,7 +85,6 @@ module.exports = {
 
     q1: {
         valType: 'data_array',
-        role: 'info',
         editType: 'calc+clearAxisTypes',
         description: [
             'Sets the Quartile 1 values.',
@@ -100,7 +93,6 @@ module.exports = {
     },
     median: {
         valType: 'data_array',
-        role: 'info',
         editType: 'calc+clearAxisTypes',
         description: [
             'Sets the median values.',
@@ -109,7 +101,6 @@ module.exports = {
     },
     q3: {
         valType: 'data_array',
-        role: 'info',
         editType: 'calc+clearAxisTypes',
         description: [
             'Sets the Quartile 3 values.',
@@ -118,7 +109,6 @@ module.exports = {
     },
     lowerfence: {
         valType: 'data_array',
-        role: 'info',
         editType: 'calc',
         description: [
             'Sets the lower fence values.',
@@ -130,7 +120,6 @@ module.exports = {
     },
     upperfence: {
         valType: 'data_array',
-        role: 'info',
         editType: 'calc',
         description: [
             'Sets the upper fence values.',
@@ -143,7 +132,6 @@ module.exports = {
 
     notched: {
         valType: 'boolean',
-        role: 'info',
         editType: 'calc',
         description: [
             'Determines whether or not notches are drawn.',
@@ -160,7 +148,6 @@ module.exports = {
         min: 0,
         max: 0.5,
         dflt: 0.25,
-        role: 'style',
         editType: 'calc',
         description: [
             'Sets the width of the notches relative to',
@@ -170,7 +157,6 @@ module.exports = {
     },
     notchspan: {
         valType: 'data_array',
-        role: 'info',
         editType: 'calc',
         description: [
             'Sets the notch span from the boxes\' `median` values.',
@@ -190,7 +176,6 @@ module.exports = {
     boxpoints: {
         valType: 'enumerated',
         values: ['all', 'outliers', 'suspectedoutliers', false],
-        role: 'style',
         editType: 'calc',
         description: [
             'If *outliers*, only the sample points lying outside the whiskers',
@@ -210,7 +195,6 @@ module.exports = {
         valType: 'number',
         min: 0,
         max: 1,
-        role: 'style',
         editType: 'calc',
         description: [
             'Sets the amount of jitter in the sample points drawn.',
@@ -223,7 +207,6 @@ module.exports = {
         valType: 'number',
         min: -2,
         max: 2,
-        role: 'style',
         editType: 'calc',
         description: [
             'Sets the position of the sample points in relation to the box(es).',
@@ -236,7 +219,6 @@ module.exports = {
     boxmean: {
         valType: 'enumerated',
         values: [true, 'sd', false],
-        role: 'style',
         editType: 'calc',
         description: [
             'If *true*, the mean of the box(es)\' underlying distribution is',
@@ -249,7 +231,6 @@ module.exports = {
     },
     mean: {
         valType: 'data_array',
-        role: 'info',
         editType: 'calc',
         description: [
             'Sets the mean values.',
@@ -261,7 +242,6 @@ module.exports = {
     },
     sd: {
         valType: 'data_array',
-        role: 'info',
         editType: 'calc',
         description: [
             'Sets the standard deviation values.',
@@ -275,7 +255,6 @@ module.exports = {
     orientation: {
         valType: 'enumerated',
         values: ['v', 'h'],
-        role: 'style',
         editType: 'calc+clearAxisTypes',
         description: [
             'Sets the orientation of the box(es).',
@@ -288,7 +267,6 @@ module.exports = {
         valType: 'enumerated',
         values: ['linear', 'exclusive', 'inclusive'],
         dflt: 'linear',
-        role: 'info',
         editType: 'calc',
         description: [
             'Sets the method used to compute the sample\'s Q1 and Q3 quartiles.',
@@ -311,7 +289,6 @@ module.exports = {
     width: {
         valType: 'number',
         min: 0,
-        role: 'info',
         dflt: 0,
         editType: 'calc',
         description: [
@@ -325,7 +302,6 @@ module.exports = {
         outliercolor: {
             valType: 'color',
             dflt: 'rgba(0, 0, 0, 0)',
-            role: 'style',
             editType: 'style',
             description: 'Sets the color of the outlier sample points.'
         },
@@ -346,7 +322,6 @@ module.exports = {
             ),
             outliercolor: {
                 valType: 'color',
-                role: 'style',
                 editType: 'style',
                 description: [
                     'Sets the border line color of the outlier sample points.',
@@ -357,7 +332,6 @@ module.exports = {
                 valType: 'number',
                 min: 0,
                 dflt: 1,
-                role: 'style',
                 editType: 'style',
                 description: [
                     'Sets the border line width (in px) of the outlier sample points.'
@@ -371,13 +345,11 @@ module.exports = {
     line: {
         color: {
             valType: 'color',
-            role: 'style',
             editType: 'style',
             description: 'Sets the color of line bounding the box(es).'
         },
         width: {
             valType: 'number',
-            role: 'style',
             min: 0,
             dflt: 2,
             editType: 'style',
@@ -393,7 +365,6 @@ module.exports = {
         min: 0,
         max: 1,
         dflt: 0.5,
-        role: 'style',
         editType: 'calc',
         description: [
             'Sets the width of the whiskers relative to',
@@ -437,7 +408,6 @@ module.exports = {
         valType: 'flaglist',
         flags: ['boxes', 'points'],
         dflt: 'boxes+points',
-        role: 'info',
         editType: 'style',
         description: [
             'Do the hover effects highlight individual boxes ',

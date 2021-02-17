@@ -1,16 +1,10 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
-var d3 = require('d3');
+var d3 = require('@plotly/d3');
 
 var Lib = require('../../lib');
+var strScale = Lib.strScale;
+var strTranslate = Lib.strTranslate;
 var rad2deg = Lib.rad2deg;
 var MID_SHIFT = require('../../constants/alignment').MID_SHIFT;
 var Drawing = require('../../components/drawing');
@@ -243,7 +237,7 @@ function drawBulletGauge(gd, plotGroup, cd, opts) {
 
     // Enter bullet, axis
     bullet.enter().append('g').classed('bullet', true);
-    bullet.attr('transform', 'translate(' + size.l + ', ' + size.t + ')');
+    bullet.attr('transform', strTranslate(size.l, size.t));
 
     axisLayer.enter().append('g')
         .classed('bulletaxis', true)
@@ -262,7 +256,7 @@ function drawBulletGauge(gd, plotGroup, cd, opts) {
     ax.setScale();
 
     vals = Axes.calcTicks(ax);
-    transFn = Axes.makeTransFn(ax);
+    transFn = Axes.makeTransTickFn(ax);
     tickSign = Axes.getTickSigns(ax)[2];
 
     shift = size.t + size.h;
@@ -322,7 +316,7 @@ function drawBulletGauge(gd, plotGroup, cd, opts) {
     }
     fgBullet.exit().remove();
 
-    var data = cd.filter(function() {return trace.gauge.threshold.value;});
+    var data = cd.filter(function() {return trace.gauge.threshold.value || trace.gauge.threshold.value === 0;});
     var threshold = bullet.selectAll('g.threshold-bullet').data(data);
     threshold.enter().append('g').classed('threshold-bullet', true).append('line');
     threshold.select('line')
@@ -495,7 +489,7 @@ function drawAngularGauge(gd, plotGroup, cd, opts) {
     // Draw threshold
     arcs = [];
     var v = trace.gauge.threshold.value;
-    if(v) {
+    if(v || v === 0) {
         arcs.push({
             range: [v, v],
             color: trace.gauge.threshold.color,
@@ -780,7 +774,7 @@ function drawNumbers(gd, plotGroup, cd, opts) {
 
             // Stash translateX
             translateX = cache(trace, 'numbersTranslate', 0, translateX, key, Math.max);
-            return strTranslate(translateX, translateY) + ' scale(' + scaleRatio + ')';
+            return strTranslate(translateX, translateY) + strScale(scaleRatio);
         });
     }
 }
@@ -835,10 +829,6 @@ function mockAxis(gd, opts, zrange) {
     handleAxisPositionDefaults(axisIn, axisOut, coerce, axisOptions);
 
     return axisOut;
-}
-
-function strTranslate(x, y) {
-    return 'translate(' + x + ',' + y + ')';
 }
 
 function fitTextInsideBox(textBB, width, height) {

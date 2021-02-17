@@ -1,10 +1,10 @@
 var Plotly = require('@lib/index');
 var Lib = require('@src/lib');
 
-var d3 = require('d3');
+var d3SelectAll = require('../../strict-d3').selectAll;
 var createGraphDiv = require('../assets/create_graph_div');
 var destroyGraphDiv = require('../assets/destroy_graph_div');
-var failTest = require('../assets/fail_test');
+
 var mouseEvent = require('../assets/mouse_event');
 var delay = require('../assets/delay');
 
@@ -35,7 +35,7 @@ describe('Test gl3d trace click/hover:', function() {
     beforeEach(function() {
         gd = createGraphDiv();
         ptData = {};
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 6000;
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 12000;
     });
 
     afterEach(function() {
@@ -68,7 +68,7 @@ describe('Test gl3d trace click/hover:', function() {
         expect(ptData.pointNumber).toEqual(pointNumber, 'pointNumber');
 
         Object.keys(extra || {}).forEach(function(k) {
-            expect(ptData[k]).toBe(extra[k], k + ' val');
+            expect(ptData[k]).toEqual(extra[k], k + ' val');
         });
     }
 
@@ -79,7 +79,7 @@ describe('Test gl3d trace click/hover:', function() {
             mouseEvent('mouseover', 300, 200);
         }
 
-        Plotly.plot(gd, _mock)
+        Plotly.newPlot(gd, _mock)
         .then(delay(20))
         .then(function() {
             gd.on('plotly_hover', function(eventData) {
@@ -97,8 +97,7 @@ describe('Test gl3d trace click/hover:', function() {
                 }
             );
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 
     it('@gl should honor *hoverlabel.namelength*', function(done) {
@@ -108,7 +107,7 @@ describe('Test gl3d trace click/hover:', function() {
             mouseEvent('mouseover', 300, 200);
         }
 
-        Plotly.plot(gd, _mock)
+        Plotly.newPlot(gd, _mock)
         .then(delay(20))
         .then(function() { return Plotly.restyle(gd, 'hoverlabel.namelength', 3); })
         .then(_hover)
@@ -121,8 +120,7 @@ describe('Test gl3d trace click/hover:', function() {
                 }
             );
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 
     it('@gl should display correct hover labels and emit correct event data (scatter3d case)', function(done) {
@@ -133,7 +131,7 @@ describe('Test gl3d trace click/hover:', function() {
             mouseEvent('mouseover', 655, 221);
         }
 
-        Plotly.plot(gd, _mock)
+        Plotly.newPlot(gd, _mock)
         .then(delay(20))
         .then(function() {
             gd.on('plotly_hover', function(eventData) {
@@ -151,7 +149,7 @@ describe('Test gl3d trace click/hover:', function() {
                 'marker.color': 'blue',
                 'marker.line.color': 'black'
             });
-            assertHoverLabelStyle(d3.selectAll('g.hovertext'), {
+            assertHoverLabelStyle(d3SelectAll('g.hovertext'), {
                 bgcolor: 'rgb(0, 0, 255)',
                 bordercolor: 'rgb(255, 255, 255)',
                 fontSize: 13,
@@ -225,7 +223,7 @@ describe('Test gl3d trace click/hover:', function() {
         .then(_hover)
         .then(delay(20))
         .then(function() {
-            assertHoverLabelStyle(d3.selectAll('g.hovertext'), {
+            assertHoverLabelStyle(d3SelectAll('g.hovertext'), {
                 bgcolor: 'rgb(255, 0, 0)',
                 bordercolor: 'rgb(255, 255, 255)',
                 fontSize: 20,
@@ -243,7 +241,7 @@ describe('Test gl3d trace click/hover:', function() {
         .then(_hover)
         .then(delay(20))
         .then(function() {
-            assertHoverLabelStyle(d3.selectAll('g.hovertext'), {
+            assertHoverLabelStyle(d3SelectAll('g.hovertext'), {
                 bgcolor: 'rgb(255, 0, 0)',
                 bordercolor: 'rgb(255, 255, 0)',
                 fontSize: 20,
@@ -257,7 +255,7 @@ describe('Test gl3d trace click/hover:', function() {
         .then(_hover)
         .then(delay(20))
         .then(function() {
-            var label = d3.selectAll('g.hovertext');
+            var label = d3SelectAll('g.hovertext');
 
             expect(label.size()).toEqual(1);
             expect(label.select('text').text()).toEqual('x: 二 4, 2017y: az: 10Apple');
@@ -294,8 +292,7 @@ describe('Test gl3d trace click/hover:', function() {
         .then(function() {
             assertHoverText(null, null, null, 'THIS Y -- a');
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 
     it('@gl should display correct hover labels and emit correct event data (surface case with connectgaps enabled)', function(done) {
@@ -306,7 +303,7 @@ describe('Test gl3d trace click/hover:', function() {
             mouseEvent('mouseover', 300, 200);
         }
 
-        Plotly.plot(gd, _mock)
+        Plotly.newPlot(gd, _mock)
         .then(delay(20))
         .then(function() {
             gd.on('plotly_hover', function(eventData) {
@@ -319,7 +316,7 @@ describe('Test gl3d trace click/hover:', function() {
         .then(function() {
             assertHoverText('x: 0.2', 'y: 2', 'z: 1,001.25');
             assertEventData(0.2, 2, 1001.25, 0, [1, 2]);
-            assertHoverLabelStyle(d3.selectAll('g.hovertext'), {
+            assertHoverLabelStyle(d3SelectAll('g.hovertext'), {
                 bgcolor: 'rgb(68, 68, 68)',
                 bordercolor: 'rgb(255, 255, 255)',
                 fontSize: 13,
@@ -327,7 +324,7 @@ describe('Test gl3d trace click/hover:', function() {
                 fontColor: 'rgb(255, 255, 255)'
             }, 'initial');
         })
-        .then(done);
+        .then(done, done.fail);
     });
 
     it('@gl should display correct hover labels and emit correct event data (surface case)', function(done) {
@@ -337,7 +334,7 @@ describe('Test gl3d trace click/hover:', function() {
             mouseEvent('mouseover', 605, 271);
         }
 
-        Plotly.plot(gd, _mock)
+        Plotly.newPlot(gd, _mock)
         .then(delay(20))
         .then(function() {
             gd.on('plotly_hover', function(eventData) {
@@ -350,7 +347,7 @@ describe('Test gl3d trace click/hover:', function() {
         .then(function() {
             assertHoverText('x: 1', 'y: 2', 'z: 43', 'one two');
             assertEventData(1, 2, 43, 0, [1, 2]);
-            assertHoverLabelStyle(d3.selectAll('g.hovertext'), {
+            assertHoverLabelStyle(d3SelectAll('g.hovertext'), {
                 bgcolor: 'rgb(68, 68, 68)',
                 bordercolor: 'rgb(255, 255, 255)',
                 fontSize: 13,
@@ -381,7 +378,7 @@ describe('Test gl3d trace click/hover:', function() {
                 'hoverinfo': 'y',
                 'hoverlabel.font.color': 'cyan'
             });
-            assertHoverLabelStyle(d3.selectAll('g.hovertext'), {
+            assertHoverLabelStyle(d3SelectAll('g.hovertext'), {
                 bgcolor: 'rgb(255, 255, 255)',
                 bordercolor: 'rgb(68, 68, 68)',
                 fontSize: 9,
@@ -389,7 +386,7 @@ describe('Test gl3d trace click/hover:', function() {
                 fontColor: 'rgb(0, 255, 255)'
             }, 'restyle');
 
-            var label = d3.selectAll('g.hovertext');
+            var label = d3SelectAll('g.hovertext');
 
             expect(label.size()).toEqual(1);
             expect(label.select('text').text()).toEqual('2');
@@ -446,7 +443,7 @@ describe('Test gl3d trace click/hover:', function() {
         .then(function() {
             assertHoverText(null, null, null, '!!! 43 !!!');
         })
-        .then(done);
+        .then(done, done.fail);
     });
 
     it('@gl should emit correct event data on click (scatter3d case)', function(done) {
@@ -458,7 +455,7 @@ describe('Test gl3d trace click/hover:', function() {
             mouseEvent('mouseover', 605, 271, {buttons: 1});
         }
 
-        Plotly.plot(gd, _mock)
+        Plotly.newPlot(gd, _mock)
         .then(delay(20))
         .then(function() {
             gd.on('plotly_click', function(eventData) {
@@ -471,7 +468,7 @@ describe('Test gl3d trace click/hover:', function() {
         .then(function() {
             assertEventData(140.72, -96.97, -96.97, 0, 2);
         })
-        .then(done);
+        .then(done, done.fail);
     });
 
     it('@gl should display correct hover labels (mesh3d case)', function(done) {
@@ -543,11 +540,10 @@ describe('Test gl3d trace click/hover:', function() {
         .then(function() {
             assertHoverText(null, null, null, '3-4-5');
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 
-    it('@gl should display correct face colors', function(done) {
+    it('@noCI @gl should display correct face colors', function(done) {
         var fig = mesh3dcoloringMock;
 
         Plotly.newPlot(gd, fig)
@@ -596,11 +592,10 @@ describe('Test gl3d trace click/hover:', function() {
                 'face color'
             );
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 
-    it('@gl should display correct face intensities (uniform grid)', function(done) {
+    it('@noCI @gl should display correct face intensities (uniform grid)', function(done) {
         var fig = mesh3dcellIntensityMock;
 
         Plotly.newPlot(gd, fig)
@@ -627,11 +622,10 @@ describe('Test gl3d trace click/hover:', function() {
                 'trace 0'
             );
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 
-    it('@gl should display correct face intensities (non-uniform grid)', function(done) {
+    it('@noCI @gl should display correct face intensities (non-uniform grid)', function(done) {
         var fig = mesh3dbunnyMock;
 
         Plotly.newPlot(gd, fig)
@@ -658,11 +652,10 @@ describe('Test gl3d trace click/hover:', function() {
                 'trace 0'
             );
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 
-    it('@gl should display correct face intensities *alpha-hull* case', function(done) {
+    it('@noCI @gl should display correct face intensities *alpha-hull* case', function(done) {
         var fig = {
             data: [{
                 type: 'mesh3d',
@@ -702,11 +695,10 @@ describe('Test gl3d trace click/hover:', function() {
                 'trace 0'
             );
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 
-    it('@gl should display correct face intensities *delaunay* case', function(done) {
+    it('@noCI @gl should display correct face intensities *delaunay* case', function(done) {
         var fig = {
             data: [{
                 type: 'mesh3d',
@@ -746,8 +738,7 @@ describe('Test gl3d trace click/hover:', function() {
                 'trace 0'
             );
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 
     function scroll(target, amt) {
@@ -831,8 +822,7 @@ describe('Test gl3d trace click/hover:', function() {
                 'vertex color'
             );
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 
     it('@gl should pick correct points after orthographic scroll zoom - scatter3d case', function(done) {
@@ -901,8 +891,7 @@ describe('Test gl3d trace click/hover:', function() {
                 'marker color'
             );
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 
     it('@gl should pick latest & closest points on hover if two points overlap', function(done) {
@@ -913,7 +902,7 @@ describe('Test gl3d trace click/hover:', function() {
             mouseEvent('mouseover', 200, 200);
         }
 
-        Plotly.plot(gd, _mock)
+        Plotly.newPlot(gd, _mock)
         .then(delay(20))
         .then(function() {
             gd.on('plotly_hover', function(eventData) {
@@ -926,7 +915,355 @@ describe('Test gl3d trace click/hover:', function() {
         .then(function() {
             assertHoverText('x: 1', 'y: 1', 'z: 1', 'third above', 'trace 1');
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
+    });
+
+    describe('propagate colors to hover labels', function() {
+        ['marker', 'line'].forEach(function(t) {
+            it('@gl scatter3d ' + t + ' colors', function(done) {
+                var orange = new Uint8Array(3);
+                orange[0] = 255;
+                orange[1] = 127;
+                orange[2] = 0;
+
+                var color = [
+                    'red',
+                    [0, 255, 0],
+                    'rgba(0,0,255,0.5)',
+                    orange,
+                    'yellow',
+                    // left undefined
+                ];
+
+                var _mock = {
+                    data: [{
+                        type: 'scatter3d',
+                        x: [-1, -2, -3, -4, -5, -6],
+                        y: [1, 2, 3, 4, 5, 6],
+                        z: [0, 0, 0, 0, 0, 0]
+                    }],
+                    layout: {
+                        margin: { t: 50, b: 50, l: 50, r: 50 },
+                        width: 600,
+                        height: 400,
+                        scene: { aspectratio: { x: 2, y: 2, z: 0.5} }
+                    }
+                };
+
+                if(t === 'marker') {
+                    _mock.data[0].mode = 'markers';
+                    _mock.data[0].marker = {
+                        color: color,
+                        size: 20
+                    };
+                } else {
+                    _mock.data[0].mode = 'lines';
+                    _mock.data[0].line = {
+                        color: color,
+                        width: 40
+                    };
+                }
+
+                Plotly.newPlot(gd, _mock)
+                .then(delay(100))
+                .then(function() {
+                    gd.on('plotly_hover', function(eventData) {
+                        ptData = eventData.points[0];
+                    });
+                })
+                .then(delay(100))
+                .then(function() {
+                    mouseEvent('mouseover', 80, 200);
+                })
+                .then(delay(100))
+                .then(function() {
+                    assertHoverText('x: −1', 'y: 1', 'z: 0');
+                    assertEventData(-1, 1, 0, 0, 0, t === 'marker' ? {
+                        'marker.color': 'red'
+                    } : {
+                        'line.color': 'red'
+                    });
+                    assertHoverLabelStyle(d3SelectAll('g.hovertext'), {
+                        bgcolor: 'rgb(255, 0, 0)',
+                        bordercolor: 'rgb(255, 255, 255)',
+                        fontColor: 'rgb(255, 255, 255)',
+                        fontSize: 13,
+                        fontFamily: 'Arial'
+                    }, 'red');
+                })
+                .then(delay(100))
+                .then(function() {
+                    mouseEvent('mouseover', 169, 200);
+                })
+                .then(delay(100))
+                .then(function() {
+                    assertHoverText('x: −2', 'y: 2', 'z: 0');
+                    assertEventData(-2, 2, 0, 0, 1, t === 'marker' ? {
+                        'marker.color': [0, 255, 0]
+                    } : {
+                        'line.color': [0, 255, 0]
+                    });
+                    assertHoverLabelStyle(d3SelectAll('g.hovertext'), {
+                        bgcolor: 'rgb(0, 255, 0)',
+                        bordercolor: 'rgb(68, 68, 68)',
+                        fontColor: 'rgb(68, 68, 68)',
+                        fontSize: 13,
+                        fontFamily: 'Arial'
+                    }, 'green');
+                })
+                .then(delay(100))
+                .then(function() {
+                    mouseEvent('mouseover', 258, 200);
+                })
+                .then(delay(100))
+                .then(function() {
+                    assertHoverText('x: −3', 'y: 3', 'z: 0');
+                    assertEventData(-3, 3, 0, 0, 2, t === 'marker' ? {
+                        'marker.color': 'rgba(0,0,255,0.5)'
+                    } : {
+                        'line.color': 'rgba(0,0,255,0.5)'
+                    });
+                    assertHoverLabelStyle(d3SelectAll('g.hovertext'), {
+                        bgcolor: 'rgb(0, 0, 255)',
+                        bordercolor: 'rgb(255, 255, 255)',
+                        fontColor: 'rgb(255, 255, 255)',
+                        fontSize: 13,
+                        fontFamily: 'Arial'
+                    }, 'blue');
+                })
+                .then(delay(100))
+                .then(function() {
+                    mouseEvent('mouseover', 347, 200);
+                })
+                .then(delay(100))
+                .then(function() {
+                    assertHoverText('x: −4', 'y: 4', 'z: 0');
+                    assertEventData(-4, 4, 0, 0, 3, t === 'marker' ? {
+                        'marker.color': orange
+                    } : {
+                        'line.color': orange
+                    });
+                    assertHoverLabelStyle(d3SelectAll('g.hovertext'), {
+                        bgcolor: 'rgb(255, 127, 0)',
+                        bordercolor: 'rgb(68, 68, 68)',
+                        fontColor: 'rgb(68, 68, 68)',
+                        fontSize: 13,
+                        fontFamily: 'Arial'
+                    }, 'orange');
+                })
+                .then(delay(100))
+                .then(function() {
+                    mouseEvent('mouseover', 436, 200);
+                })
+                .then(delay(100))
+                .then(function() {
+                    assertHoverText('x: −5', 'y: 5', 'z: 0');
+                    assertEventData(-5, 5, 0, 0, 4, t === 'marker' ? {
+                        'marker.color': 'yellow'
+                    } : {
+                        'line.color': 'yellow'
+                    });
+                    assertHoverLabelStyle(d3SelectAll('g.hovertext'), {
+                        bgcolor: 'rgb(255, 255, 0)',
+                        bordercolor: 'rgb(68, 68, 68)',
+                        fontColor: 'rgb(68, 68, 68)',
+                        fontSize: 13,
+                        fontFamily: 'Arial'
+                    }, 'yellow');
+                })
+                .then(delay(100))
+                .then(function() {
+                    mouseEvent('mouseover', 525, 200);
+                })
+                .then(delay(100))
+                .then(function() {
+                    assertHoverText('x: −6', 'y: 6', 'z: 0');
+                    assertEventData(-6, 6, 0, 0, 5, t === 'marker' ? {
+                        'marker.color': undefined
+                    } : {
+                        'line.color': undefined
+                    });
+                    assertHoverLabelStyle(d3SelectAll('g.hovertext'), {
+                        bgcolor: 'rgb(68, 68, 68)',
+                        bordercolor: 'rgb(255, 255, 255)',
+                        fontColor: 'rgb(255, 255, 255)',
+                        fontSize: 13,
+                        fontFamily: 'Arial'
+                    }, 'undefined');
+                })
+                .then(done, done.fail);
+            });
+
+            it('@gl scatter3d ' + t + ' colorscale', function(done) {
+                var color = [
+                    2,
+                    1,
+                    0,
+                    -1,
+                    -2,
+                    // left undefined
+                ];
+
+                var _mock = {
+                    data: [{
+                        type: 'scatter3d',
+                        x: [-1, -2, -3, -4, -5, -6],
+                        y: [1, 2, 3, 4, 5, 6],
+                        z: [0, 0, 0, 0, 0, 0]
+                    }],
+                    layout: {
+                        margin: { t: 50, b: 50, l: 50, r: 50 },
+                        width: 600,
+                        height: 400,
+                        scene: { aspectratio: { x: 2, y: 2, z: 0.5} }
+                    }
+                };
+
+                if(t === 'marker') {
+                    _mock.data[0].mode = 'markers';
+                    _mock.data[0].marker = {
+                        colorscale: 'Portland',
+                        color: color,
+                        size: 20
+                    };
+                } else {
+                    _mock.data[0].mode = 'lines';
+                    _mock.data[0].line = {
+                        colorscale: 'Portland',
+                        color: color,
+                        width: 40
+                    };
+                }
+
+                Plotly.newPlot(gd, _mock)
+                .then(delay(100))
+                .then(function() {
+                    gd.on('plotly_hover', function(eventData) {
+                        ptData = eventData.points[0];
+                    });
+                })
+                .then(delay(100))
+                .then(function() {
+                    mouseEvent('mouseover', 80, 200);
+                })
+                .then(delay(100))
+                .then(function() {
+                    assertHoverText('x: −1', 'y: 1', 'z: 0');
+                    assertEventData(-1, 1, 0, 0, 0, t === 'marker' ? {
+                        'marker.color': 2
+                    } : {
+                        'line.color': 2
+                    });
+                    assertHoverLabelStyle(d3SelectAll('g.hovertext'), {
+                        bgcolor: 'rgb(217, 30, 30)',
+                        bordercolor: 'rgb(255, 255, 255)',
+                        fontColor: 'rgb(255, 255, 255)',
+                        fontSize: 13,
+                        fontFamily: 'Arial'
+                    }, '1st point');
+                })
+                .then(delay(100))
+                .then(function() {
+                    mouseEvent('mouseover', 169, 200);
+                })
+                .then(delay(100))
+                .then(function() {
+                    assertHoverText('x: −2', 'y: 2', 'z: 0');
+                    assertEventData(-2, 2, 0, 0, 1, t === 'marker' ? {
+                        'marker.color': 1
+                    } : {
+                        'line.color': 1
+                    });
+                    assertHoverLabelStyle(d3SelectAll('g.hovertext'), {
+                        bgcolor: 'rgb(242, 143, 56)',
+                        bordercolor: 'rgb(68, 68, 68)',
+                        fontColor: 'rgb(68, 68, 68)',
+                        fontSize: 13,
+                        fontFamily: 'Arial'
+                    }, '2nd point');
+                })
+                .then(delay(100))
+                .then(function() {
+                    mouseEvent('mouseover', 258, 200);
+                })
+                .then(delay(100))
+                .then(function() {
+                    assertHoverText('x: −3', 'y: 3', 'z: 0');
+                    assertEventData(-3, 3, 0, 0, 2, t === 'marker' ? {
+                        'marker.color': 0
+                    } : {
+                        'line.color': 0
+                    });
+                    assertHoverLabelStyle(d3SelectAll('g.hovertext'), {
+                        bgcolor: 'rgb(242, 211, 56)',
+                        bordercolor: 'rgb(68, 68, 68)',
+                        fontColor: 'rgb(68, 68, 68)',
+                        fontSize: 13,
+                        fontFamily: 'Arial'
+                    }, '3rd point');
+                })
+                .then(delay(100))
+                .then(function() {
+                    mouseEvent('mouseover', 347, 200);
+                })
+                .then(delay(100))
+                .then(function() {
+                    assertHoverText('x: −4', 'y: 4', 'z: 0');
+                    assertEventData(-4, 4, 0, 0, 3, t === 'marker' ? {
+                        'marker.color': -1
+                    } : {
+                        'line.color': -1
+                    });
+                    assertHoverLabelStyle(d3SelectAll('g.hovertext'), {
+                        bgcolor: 'rgb(10, 136, 186)',
+                        bordercolor: 'rgb(255, 255, 255)',
+                        fontColor: 'rgb(255, 255, 255)',
+                        fontSize: 13,
+                        fontFamily: 'Arial'
+                    }, '4th point');
+                })
+                .then(delay(100))
+                .then(function() {
+                    mouseEvent('mouseover', 436, 200);
+                })
+                .then(delay(100))
+                .then(function() {
+                    assertHoverText('x: −5', 'y: 5', 'z: 0');
+                    assertEventData(-5, 5, 0, 0, 4, t === 'marker' ? {
+                        'marker.color': -2
+                    } : {
+                        'line.color': -2
+                    });
+                    assertHoverLabelStyle(d3SelectAll('g.hovertext'), {
+                        bgcolor: 'rgb(12, 51, 131)',
+                        bordercolor: 'rgb(255, 255, 255)',
+                        fontColor: 'rgb(255, 255, 255)',
+                        fontSize: 13,
+                        fontFamily: 'Arial'
+                    }, '5th point');
+                })
+                .then(delay(100))
+                .then(function() {
+                    mouseEvent('mouseover', 525, 200);
+                })
+                .then(delay(100))
+                .then(function() {
+                    assertHoverText('x: −6', 'y: 6', 'z: 0');
+                    assertEventData(-6, 6, 0, 0, 5, t === 'marker' ? {
+                        'marker.color': undefined
+                    } : {
+                        'line.color': undefined
+                    });
+                    assertHoverLabelStyle(d3SelectAll('g.hovertext'), {
+                        bgcolor: 'rgb(68, 68, 68)',
+                        bordercolor: 'rgb(255, 255, 255)',
+                        fontColor: 'rgb(255, 255, 255)',
+                        fontSize: 13,
+                        fontFamily: 'Arial'
+                    }, '6th point');
+                })
+                .then(done, done.fail);
+            });
+        });
     });
 });

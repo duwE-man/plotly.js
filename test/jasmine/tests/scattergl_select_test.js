@@ -1,10 +1,10 @@
 var Plotly = require('@lib/index');
 var Lib = require('@src/lib');
 
-var d3 = require('d3');
+var d3Select = require('../../strict-d3').select;
 var createGraphDiv = require('../assets/create_graph_div');
 var destroyGraphDiv = require('../assets/destroy_graph_div');
-var failTest = require('../assets/fail_test.js');
+
 
 var doubleClick = require('../assets/double_click');
 var delay = require('../assets/delay');
@@ -13,7 +13,7 @@ var readPixel = require('../assets/read_pixel');
 
 function drag(gd, path) {
     var len = path.length;
-    var el = d3.select(gd).select('rect.nsewdrag').node();
+    var el = d3Select(gd).select('rect.nsewdrag').node();
     var opts = {element: el};
 
     Lib.clearThrottle();
@@ -87,7 +87,7 @@ describe('Test gl2d lasso/select:', function() {
         _mock.layout.dragmode = 'select';
         gd = createGraphDiv();
 
-        Plotly.plot(gd, _mock)
+        Plotly.newPlot(gd, _mock)
         .then(delay(20))
         .then(function() {
             expect(gd._fullLayout._plots.xy._scene.select2d).not.toBe(undefined, 'scatter2d renderer');
@@ -104,8 +104,7 @@ describe('Test gl2d lasso/select:', function() {
                 ]
             });
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 
     it('@gl should work under fast mode with *lasso* dragmode', function(done) {
@@ -113,7 +112,7 @@ describe('Test gl2d lasso/select:', function() {
         _mock.layout.dragmode = 'lasso';
         gd = createGraphDiv();
 
-        Plotly.plot(gd, _mock)
+        Plotly.newPlot(gd, _mock)
         .then(delay(20))
         .then(function() {
             return select(gd, lassoPath2);
@@ -128,8 +127,7 @@ describe('Test gl2d lasso/select:', function() {
                 ]
             });
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 
     it('@gl should work under fancy mode with *select* dragmode', function(done) {
@@ -137,7 +135,7 @@ describe('Test gl2d lasso/select:', function() {
         _mock.layout.dragmode = 'select';
         gd = createGraphDiv();
 
-        Plotly.plot(gd, _mock)
+        Plotly.newPlot(gd, _mock)
         .then(delay(20))
         .then(function() {
             return select(gd, selectPath2);
@@ -148,8 +146,7 @@ describe('Test gl2d lasso/select:', function() {
                 points: [{x: 0.004, y: 12.5}]
             });
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 
     it('@gl should work under fancy mode with *lasso* dragmode', function(done) {
@@ -157,7 +154,7 @@ describe('Test gl2d lasso/select:', function() {
         _mock.layout.dragmode = 'lasso';
         gd = createGraphDiv();
 
-        Plotly.plot(gd, _mock)
+        Plotly.newPlot(gd, _mock)
         .then(delay(20))
         .then(function() {
             return select(gd, lassoPath);
@@ -167,8 +164,7 @@ describe('Test gl2d lasso/select:', function() {
                 points: [{ x: 0.099, y: 2.75 }]
             });
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 
     it('@gl should work on trace with enabled transforms', function(done) {
@@ -179,7 +175,7 @@ describe('Test gl2d lasso/select:', function() {
         fig.layout.width = 500;
         gd = createGraphDiv();
 
-        Plotly.plot(gd, fig)
+        Plotly.newPlot(gd, fig)
         .then(delay(20))
         .then(function() { return select(gd, [[100, 100], [250, 250]]); })
         .then(function(eventData) {
@@ -190,8 +186,7 @@ describe('Test gl2d lasso/select:', function() {
                 ]
             });
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 
     it('@gl should work on gl text charts', function(done) {
@@ -210,7 +205,7 @@ describe('Test gl2d lasso/select:', function() {
             });
         }
 
-        Plotly.plot(gd, fig)
+        Plotly.newPlot(gd, fig)
         .then(delay(20))
         .then(function() {
             _assertGlTextOpts('base', {
@@ -273,8 +268,7 @@ describe('Test gl2d lasso/select:', function() {
                 ]
             });
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 
     it('@gl should work on gl text charts with array textfont.color', function(done) {
@@ -293,7 +287,7 @@ describe('Test gl2d lasso/select:', function() {
             });
         }
 
-        Plotly.plot(gd, fig)
+        Plotly.newPlot(gd, fig)
         .then(delay(20))
         .then(function() {
             _assertGlTextOpts('base', {
@@ -353,8 +347,7 @@ describe('Test gl2d lasso/select:', function() {
                 ]
             });
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 });
 
@@ -388,7 +381,7 @@ describe('Test displayed selections:', function() {
 
         function readFocus() { return _read('.gl-canvas-focus'); }
 
-        Plotly.plot(gd, [{
+        Plotly.newPlot(gd, [{
             type: 'scattergl',
             mode: 'markers',
             y: [2, 1, 2]
@@ -424,8 +417,7 @@ describe('Test displayed selections:', function() {
             expect(readContext()).toBe(0, 'update+select context');
             expect(readFocus()).toBeGreaterThan(1e4, 'update+select focus');
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 
     it('@gl should display selection of big number of regular points', function(done) {
@@ -448,15 +440,14 @@ describe('Test displayed selections:', function() {
             }
         };
 
-        Plotly.plot(gd, mock)
+        Plotly.newPlot(gd, mock)
         .then(select(gd, [[160, 100], [180, 100]]))
         .then(function() {
             expect(readPixel(gd.querySelector('.gl-canvas-context'), 168, 100)[3]).toBe(0);
             expect(readPixel(gd.querySelector('.gl-canvas-context'), 158, 100)[3]).not.toBe(0);
             expect(readPixel(gd.querySelector('.gl-canvas-focus'), 168, 100)[3]).not.toBe(0);
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 
     it('@gl should display selection of big number of miscellaneous points', function(done) {
@@ -493,15 +484,14 @@ describe('Test displayed selections:', function() {
             }
         };
 
-        Plotly.plot(gd, mock)
+        Plotly.newPlot(gd, mock)
         .then(select(gd, [[160, 100], [180, 100]]))
         .then(function() {
             expect(readPixel(gd.querySelector('.gl-canvas-context'), 168, 100)[3]).toBe(0);
             expect(readPixel(gd.querySelector('.gl-canvas-context'), 158, 100)[3]).not.toBe(0);
             expect(readPixel(gd.querySelector('.gl-canvas-focus'), 168, 100)[3]).not.toBe(0);
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 });
 
@@ -678,8 +668,7 @@ describe('Test selections during funky scenarios', function() {
                     ]
                 });
             })
-            .catch(failTest)
-            .then(done);
+            .then(done, done.fail);
         });
 
         it('@gl should behave correctly when doubleclick before selecting anything', function(done) {
@@ -714,8 +703,7 @@ describe('Test selections during funky scenarios', function() {
                     ]
                 });
             })
-            .catch(failTest)
-            .then(done);
+            .then(done, done.fail);
         });
 
         it('@gl should behave correctly during select -> doubleclick -> dragmode:mode -> dragmode:select', function(done) {
@@ -766,8 +754,7 @@ describe('Test selections during funky scenarios', function() {
                     ]
                 });
             })
-            .catch(failTest)
-            .then(done);
+            .then(done, done.fail);
         });
     });
 
@@ -846,8 +833,7 @@ describe('Test selections during funky scenarios', function() {
                 ['select2d', [[[], []]]]
             ]);
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 
     it('@gl should work on overlaid subplots', function(done) {
@@ -855,7 +841,7 @@ describe('Test selections during funky scenarios', function() {
 
         var scene, scene2;
 
-        Plotly.plot(gd, [{
+        Plotly.newPlot(gd, [{
             x: [1, 2, 3],
             y: [40, 50, 60],
             type: 'scattergl',
@@ -888,7 +874,6 @@ describe('Test selections during funky scenarios', function() {
             expect(scene.scatter2d.draw).toHaveBeenCalledTimes(1);
             expect(scene2.scatter2d.draw).toHaveBeenCalledTimes(1);
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 });

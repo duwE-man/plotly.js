@@ -1,14 +1,6 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
-var d3 = require('d3');
+var d3 = require('@plotly/d3');
 var Color = require('../../components/color');
 var Lib = require('../../lib');
 var helpers = require('../sunburst/helpers');
@@ -47,8 +39,8 @@ function styleOne(s, pt, trace, opts) {
         lineColor = trace._hovered.marker.line.color;
         lineWidth = trace._hovered.marker.line.width;
     } else {
-        if(isRoot && fillColor === 'rgba(0,0,0,0)') {
-            opacity = 0;
+        if(isRoot && fillColor === trace.root.color) {
+            opacity = 100;
             lineColor = 'rgba(0,0,0,0)';
             lineWidth = 0;
         } else {

@@ -1,11 +1,3 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
 var FORMAT_LINK = require('../constants/docs').FORMAT_LINK;
@@ -47,7 +39,6 @@ exports.hovertemplateAttrs = function(opts, extra) {
 
     var hovertemplate = {
         valType: 'string',
-        role: 'info',
         dflt: '',
         editType: opts.editType || 'none',
         description: [
@@ -77,7 +68,6 @@ exports.texttemplateAttrs = function(opts, extra) {
 
     var texttemplate = {
         valType: 'string',
-        role: 'info',
         dflt: '',
         editType: opts.editType || 'calc',
         description: [

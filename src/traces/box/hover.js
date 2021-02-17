@@ -1,11 +1,3 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
 var Axes = require('../../plots/cartesian/axes');
@@ -143,7 +135,7 @@ function hoverOnBoxes(pointData, xval, yval, hovermode) {
     pointData[pLetter + '0'] = pAxis.c2p(di.pos + t.bPos - boxDeltaNeg, true);
     pointData[pLetter + '1'] = pAxis.c2p(di.pos + t.bPos + boxDeltaPos, true);
 
-    pointData[pLetter + 'LabelVal'] = di.pos;
+    pointData[pLetter + 'LabelVal'] = di.orig_p !== undefined ? di.orig_p : di.pos;
 
     var spikePosAttr = pLetter + 'Spike';
     pointData.spikeDistance = dxy(di) * spikePseudoDistance / hoverPseudoDistance;
@@ -257,14 +249,16 @@ function hoverOnPoints(pointData, xval, yval) {
         hovertemplate: trace.hovertemplate
     });
 
+    var origPos = di.orig_p;
+    var pos = origPos !== undefined ? origPos : di.pos;
     var pa;
     if(trace.orientation === 'h') {
         pa = ya;
         closePtData.xLabelVal = pt.x;
-        closePtData.yLabelVal = di.pos;
+        closePtData.yLabelVal = pos;
     } else {
         pa = xa;
-        closePtData.xLabelVal = di.pos;
+        closePtData.xLabelVal = pos;
         closePtData.yLabelVal = pt.y;
     }
 

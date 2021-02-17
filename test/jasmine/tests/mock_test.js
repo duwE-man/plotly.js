@@ -5,9 +5,6 @@ var list = [
     '1',
     '4',
     '5',
-    '6',
-    '7',
-    '8',
     '10',
     '11',
     '12',
@@ -38,6 +35,11 @@ var list = [
     'animation_bar',
     'annotations',
     'annotations-autorange',
+    'arrow-markers',
+    'automargin-large-margins',
+    'automargin-large-margins-both-sides',
+    'automargin-large-margins-horizontal',
+    'automargin-narrow-indicator',
     'automargin-mirror-all',
     'automargin-mirror-allticks',
     'automargin-multiline-titles',
@@ -77,6 +79,10 @@ var list = [
     'axes_category_descending',
     'axes_category_descending_with_gaps',
     'axes_category_null',
+    'axes_chain_scaleanchor_matches',
+    'axes_chain_scaleanchor_matches2',
+    'axes_chain_scaleanchor_matches_inside-ticklabels',
+    'axes_chain_scaleanchor_matches2_inside-ticklabels',
     'axes_custom-ticks_log-date',
     'axes_enumerated_ticks',
     'axes_free_default',
@@ -117,6 +123,7 @@ var list = [
     'bar_hide_nulls',
     'bar_line',
     'bar_marker_array',
+    'bar_annotation_max_range_eq_category',
     'bar_multiline_labels',
     'bar_nonnumeric_sizes',
     'bar_show_narrow',
@@ -253,9 +260,15 @@ var list = [
     'custom_colorscale',
     'custom_size_subplot',
     'date_axes',
+    'date_axes_side_top',
+    'date_axes_period',
+    'date_axes_period2',
+    'date_axes_period_breaks_automargin',
     'date_histogram',
     'dendrogram',
     'display-text_zero-number',
+    'domain_refs',
+    'domain_ref_axis_types',
     'earth_heatmap',
     'electric_heatmap',
     'empty',
@@ -375,6 +388,7 @@ var list = [
     'gl2d_fill-ordering',
     'gl2d_fonts',
     'gl2d_heatmapgl',
+    'gl2d_heatmapgl_discrete',
     'gl2d_horiz-lines',
     'gl2d_layout_image',
     'gl2d_line_aligned',
@@ -410,6 +424,7 @@ var list = [
     'gl2d_parcoords_select_first_last_enum',
     'gl2d_parcoords_style_labels',
     'gl2d_parcoords_tick_format',
+    'gl2d_period_positioning',
     'gl2d_point-selection',
     'gl2d_pointcloud-basic',
     'gl2d_rgb_dont_accept_alpha_scattergl',
@@ -557,9 +572,11 @@ var list = [
     'gl3d_surface_transparent-with-contours',
     'gl3d_surface-circular-colorscale',
     'gl3d_surface-circular-opacityscale',
+    'gl3d_surface-heatmap-treemap_transparent-colorscale',
     'gl3d_surface-lighting',
     'gl3d_tetrahedra',
     'gl3d_text-weirdness',
+    'gl3d_ticks-milliseconds',
     'gl3d_traces-with-legend',
     'gl3d_traces-with-opacity',
     'gl3d_transparent_same-depth',
@@ -627,12 +644,15 @@ var list = [
     'hists-on-matching-axes',
     'hot_heatmap',
     'image_adventurer',
+    'image_astronaut_source',
     'image_axis_reverse',
     'image_axis_type',
     'image_cat',
     'image_colormodel',
     'image_non_numeric',
     'image_opacity',
+    'image_source_axis_reverse',
+    'image_source_axis_reverse_zsmooth',
     'image_with_gaps',
     'image_with_heatmap',
     'image_zmin_zmax',
@@ -657,8 +677,10 @@ var list = [
     'legend_horizontal_bg_fit',
     'legend_horizontal_groups',
     'legend_horizontal_one_row',
+    'legend_horizontal_testwrap',
     'legend_horizontal_wrap-alll-lines',
     'legend_inside',
+    'legend_itemwidth_dashline',
     'legend_labels',
     'legend_large_margin',
     'legend_margin-autoexpand-false',
@@ -700,8 +722,8 @@ var list = [
     'mapbox_choropleth0-legend',
     'mapbox_connectgaps',
     'mapbox_custom-style',
-    'mapbox_density-mulitple',
-    'mapbox_density-mulitple_legend',
+    'mapbox_density-multiple',
+    'mapbox_density-multiple_legend',
     'mapbox_density0',
     'mapbox_density0-legend',
     'mapbox_earthquake-density',
@@ -720,6 +742,7 @@ var list = [
     'matching-missing-axes',
     'mathjax',
     'mirror-all-vs-allticks',
+    'missing-category-order',
     'multicategory',
     'multicategory_histograms',
     'multicategory-inside-ticks',
@@ -747,6 +770,14 @@ var list = [
     'parcats_reordered',
     'parcats_unbundled',
     'percent_error_bar',
+    'period_positioning',
+    'period_positioning2',
+    'period_positioning3',
+    'period_positioning4',
+    'period_positioning5',
+    'period_positioning6',
+    'period_positioning7',
+    'period_positioning8',
     'picnic_heatmap',
     'pie_aggregated',
     'pie_automargin',
@@ -773,7 +804,6 @@ var list = [
     'plot_types',
     'point-selection',
     'point-selection2',
-    'polar_area_chart',
     'polar_bar-overlay',
     'polar_bar-stacked',
     'polar_bar-width-base-offset',
@@ -813,6 +843,7 @@ var list = [
     'range_slider_reversed-range',
     'range_slider_top_axis',
     'rdbu_heatmap',
+    'reversed-axis-dividers',
     'sankey_circular',
     'sankey_circular_large',
     'sankey_circular_process',
@@ -901,6 +932,7 @@ var list = [
     'sunburst_values_colorscale',
     'sunburst_with-without_values',
     'sunburst_zero_values_textfit',
+    'symbols_string-numbers',
     'table_latex_multitrace_scatter',
     'table_plain_birds',
     'table_ragged',
@@ -927,8 +959,19 @@ var list = [
     'tick_prefix_suffix',
     'tick_prefix_suffix_exponent',
     'tick-datafn',
+    'tick-increment',
+    'tick-percent',
     'tickformat',
     'tickformatstops',
+    'ticklabelposition-0',
+    'ticklabelposition-1',
+    'ticklabelposition-2',
+    'ticklabelposition-3',
+    'ticklabelposition-4',
+    'ticklabelposition-a',
+    'ticklabelposition-b',
+    'ticklabelposition-c',
+    'ticklabelposition-d',
     'tickson_boundaries',
     'titles-avoid-labels',
     'trace_metatext',
@@ -945,6 +988,7 @@ var list = [
     'treemap_packings',
     'treemap_pad_mirror',
     'treemap_pad_transpose',
+    'treemap_root-color',
     'treemap_sunburst_basic',
     'treemap_sunburst_marker_colors',
     'treemap_textfit',
@@ -986,6 +1030,7 @@ var list = [
     'updatemenus',
     'updatemenus_positioning',
     'updatemenus_toggle',
+    'vertical-tickangles',
     'violin_bandwidth-edge-cases',
     'violin_box_multiple_widths',
     'violin_box_overlay',
@@ -1048,9 +1093,6 @@ figs['0'] = require('@mocks/0');
 // figs['1'] = require('@mocks/1');
 figs['4'] = require('@mocks/4');
 figs['5'] = require('@mocks/5');
-// figs['6'] = require('@mocks/6');
-// figs['7'] = require('@mocks/7');
-// figs['8'] = require('@mocks/8');
 figs['10'] = require('@mocks/10');
 // figs['11'] = require('@mocks/11');
 // figs['12'] = require('@mocks/12');
@@ -1081,6 +1123,11 @@ figs['animation'] = require('@mocks/animation');
 figs['animation_bar'] = require('@mocks/animation_bar');
 // figs['annotations'] = require('@mocks/annotations');
 // figs['annotations-autorange'] = require('@mocks/annotations-autorange');
+figs['arrow-markers'] = require('@mocks/arrow-markers');
+figs['automargin-large-margins'] = require('@mocks/automargin-large-margins');
+figs['automargin-large-margins-both-sides'] = require('@mocks/automargin-large-margins-both-sides');
+figs['automargin-large-margins-horizontal'] = require('@mocks/automargin-large-margins-horizontal');
+figs['automargin-narrow-indicator'] = require('@mocks/automargin-narrow-indicator');
 figs['automargin-mirror-all'] = require('@mocks/automargin-mirror-all');
 figs['automargin-mirror-allticks'] = require('@mocks/automargin-mirror-allticks');
 figs['automargin-multiline-titles'] = require('@mocks/automargin-multiline-titles');
@@ -1120,6 +1167,10 @@ figs['axes_category_categoryarray_truncated_tails'] = require('@mocks/axes_categ
 // figs['axes_category_descending'] = require('@mocks/axes_category_descending');
 // figs['axes_category_descending_with_gaps'] = require('@mocks/axes_category_descending_with_gaps');
 figs['axes_category_null'] = require('@mocks/axes_category_null');
+figs['axes_chain_scaleanchor_matches'] = require('@mocks/axes_chain_scaleanchor_matches');
+figs['axes_chain_scaleanchor_matches2'] = require('@mocks/axes_chain_scaleanchor_matches2');
+figs['axes_chain_scaleanchor_matches_inside-ticklabels'] = require('@mocks/axes_chain_scaleanchor_matches_inside-ticklabels');
+figs['axes_chain_scaleanchor_matches2_inside-ticklabels'] = require('@mocks/axes_chain_scaleanchor_matches2_inside-ticklabels');
 figs['axes_custom-ticks_log-date'] = require('@mocks/axes_custom-ticks_log-date');
 figs['axes_enumerated_ticks'] = require('@mocks/axes_enumerated_ticks');
 figs['axes_free_default'] = require('@mocks/axes_free_default');
@@ -1160,6 +1211,7 @@ figs['bar_group_percent'] = require('@mocks/bar_group_percent');
 figs['bar_hide_nulls'] = require('@mocks/bar_hide_nulls');
 figs['bar_line'] = require('@mocks/bar_line');
 figs['bar_marker_array'] = require('@mocks/bar_marker_array');
+figs['bar_annotation_max_range_eq_category'] = require('@mocks/bar_annotation_max_range_eq_category');
 figs['bar_multiline_labels'] = require('@mocks/bar_multiline_labels');
 figs['bar_nonnumeric_sizes'] = require('@mocks/bar_nonnumeric_sizes');
 figs['bar_show_narrow'] = require('@mocks/bar_show_narrow');
@@ -1296,9 +1348,15 @@ figs['contour-heatmap-coloring-set-contours'] = require('@mocks/contour-heatmap-
 figs['custom_colorscale'] = require('@mocks/custom_colorscale');
 figs['custom_size_subplot'] = require('@mocks/custom_size_subplot');
 figs['date_axes'] = require('@mocks/date_axes');
+figs['date_axes_side_top'] = require('@mocks/date_axes_side_top');
+figs['date_axes_period'] = require('@mocks/date_axes_period');
+figs['date_axes_period2'] = require('@mocks/date_axes_period2');
+figs['date_axes_period_breaks_automargin'] = require('@mocks/date_axes_period_breaks_automargin');
 figs['date_histogram'] = require('@mocks/date_histogram');
 // figs['dendrogram'] = require('@mocks/dendrogram');
 figs['display-text_zero-number'] = require('@mocks/display-text_zero-number');
+figs['domain_refs'] = require('@mocks/domain_refs');
+figs['domain_ref_axis_types'] = require('@mocks/domain_ref_axis_types');
 figs['earth_heatmap'] = require('@mocks/earth_heatmap');
 figs['electric_heatmap'] = require('@mocks/electric_heatmap');
 figs['empty'] = require('@mocks/empty');
@@ -1418,6 +1476,7 @@ figs['gl2d_error_bars_log'] = require('@mocks/gl2d_error_bars_log');
 figs['gl2d_fill-ordering'] = require('@mocks/gl2d_fill-ordering');
 // figs['gl2d_fonts'] = require('@mocks/gl2d_fonts');
 figs['gl2d_heatmapgl'] = require('@mocks/gl2d_heatmapgl');
+figs['gl2d_heatmapgl_discrete'] = require('@mocks/gl2d_heatmapgl_discrete');
 figs['gl2d_horiz-lines'] = require('@mocks/gl2d_horiz-lines');
 // figs['gl2d_layout_image'] = require('@mocks/gl2d_layout_image');
 figs['gl2d_line_aligned'] = require('@mocks/gl2d_line_aligned');
@@ -1453,6 +1512,7 @@ figs['gl2d_parcoords_rgba_colorscale'] = require('@mocks/gl2d_parcoords_rgba_col
 // figs['gl2d_parcoords_select_first_last_enum'] = require('@mocks/gl2d_parcoords_select_first_last_enum');
 figs['gl2d_parcoords_style_labels'] = require('@mocks/gl2d_parcoords_style_labels');
 figs['gl2d_parcoords_tick_format'] = require('@mocks/gl2d_parcoords_tick_format');
+figs['gl2d_period_positioning'] = require('@mocks/gl2d_period_positioning');
 figs['gl2d_point-selection'] = require('@mocks/gl2d_point-selection');
 // figs['gl2d_pointcloud-basic'] = require('@mocks/gl2d_pointcloud-basic');
 // figs['gl2d_rgb_dont_accept_alpha_scattergl'] = require('@mocks/gl2d_rgb_dont_accept_alpha_scattergl');
@@ -1600,9 +1660,11 @@ figs['gl3d_surface_opacity_match_mesh3d'] = require('@mocks/gl3d_surface_opacity
 figs['gl3d_surface_transparent-with-contours'] = require('@mocks/gl3d_surface_transparent-with-contours');
 figs['gl3d_surface-circular-colorscale'] = require('@mocks/gl3d_surface-circular-colorscale');
 figs['gl3d_surface-circular-opacityscale'] = require('@mocks/gl3d_surface-circular-opacityscale');
+// figs['gl3d_surface-heatmap-treemap_transparent-colorscale'] = require('@mocks/gl3d_surface-heatmap-treemap_transparent-colorscale');
 // figs['gl3d_surface-lighting'] = require('@mocks/gl3d_surface-lighting');
 figs['gl3d_tetrahedra'] = require('@mocks/gl3d_tetrahedra');
 figs['gl3d_text-weirdness'] = require('@mocks/gl3d_text-weirdness');
+figs['gl3d_ticks-milliseconds'] = require('@mocks/gl3d_ticks-milliseconds');
 // figs['gl3d_traces-with-legend'] = require('@mocks/gl3d_traces-with-legend');
 // figs['gl3d_traces-with-opacity'] = require('@mocks/gl3d_traces-with-opacity');
 figs['gl3d_transparent_same-depth'] = require('@mocks/gl3d_transparent_same-depth');
@@ -1670,12 +1732,15 @@ figs['histogram2dcontour_legend-coloraxis'] = require('@mocks/histogram2dcontour
 figs['hists-on-matching-axes'] = require('@mocks/hists-on-matching-axes');
 figs['hot_heatmap'] = require('@mocks/hot_heatmap');
 figs['image_adventurer'] = require('@mocks/image_adventurer');
+figs['image_astronaut_source'] = require('@mocks/image_astronaut_source');
 figs['image_axis_reverse'] = require('@mocks/image_axis_reverse');
 figs['image_axis_type'] = require('@mocks/image_axis_type');
 figs['image_cat'] = require('@mocks/image_cat');
 figs['image_colormodel'] = require('@mocks/image_colormodel');
 figs['image_non_numeric'] = require('@mocks/image_non_numeric');
 figs['image_opacity'] = require('@mocks/image_opacity');
+figs['image_source_axis_reverse'] = require('@mocks/image_source_axis_reverse');
+figs['image_source_axis_reverse_zsmooth'] = require('@mocks/image_source_axis_reverse_zsmooth');
 figs['image_with_gaps'] = require('@mocks/image_with_gaps');
 figs['image_with_heatmap'] = require('@mocks/image_with_heatmap');
 figs['image_zmin_zmax'] = require('@mocks/image_zmin_zmax');
@@ -1700,8 +1765,10 @@ figs['layout-colorway'] = require('@mocks/layout-colorway');
 figs['legend_horizontal_bg_fit'] = require('@mocks/legend_horizontal_bg_fit');
 figs['legend_horizontal_groups'] = require('@mocks/legend_horizontal_groups');
 figs['legend_horizontal_one_row'] = require('@mocks/legend_horizontal_one_row');
+figs['legend_horizontal_testwrap'] = require('@mocks/legend_horizontal_testwrap');
 figs['legend_horizontal_wrap-alll-lines'] = require('@mocks/legend_horizontal_wrap-alll-lines');
 figs['legend_inside'] = require('@mocks/legend_inside');
+figs['legend_itemwidth_dashline'] = require('@mocks/legend_itemwidth_dashline');
 figs['legend_labels'] = require('@mocks/legend_labels');
 figs['legend_large_margin'] = require('@mocks/legend_large_margin');
 figs['legend_margin-autoexpand-false'] = require('@mocks/legend_margin-autoexpand-false');
@@ -1743,8 +1810,8 @@ figs['mapbox_choropleth0'] = require('@mocks/mapbox_choropleth0');
 figs['mapbox_choropleth0-legend'] = require('@mocks/mapbox_choropleth0-legend');
 figs['mapbox_connectgaps'] = require('@mocks/mapbox_connectgaps');
 figs['mapbox_custom-style'] = require('@mocks/mapbox_custom-style');
-figs['mapbox_density-mulitple'] = require('@mocks/mapbox_density-mulitple');
-figs['mapbox_density-mulitple_legend'] = require('@mocks/mapbox_density-mulitple_legend');
+figs['mapbox_density-multiple'] = require('@mocks/mapbox_density-multiple');
+figs['mapbox_density-multiple_legend'] = require('@mocks/mapbox_density-multiple_legend');
 figs['mapbox_density0'] = require('@mocks/mapbox_density0');
 figs['mapbox_density0-legend'] = require('@mocks/mapbox_density0-legend');
 figs['mapbox_earthquake-density'] = require('@mocks/mapbox_earthquake-density');
@@ -1763,6 +1830,7 @@ figs['matching-categories'] = require('@mocks/matching-categories');
 // figs['matching-missing-axes'] = require('@mocks/matching-missing-axes');
 // figs['mathjax'] = require('@mocks/mathjax');
 figs['mirror-all-vs-allticks'] = require('@mocks/mirror-all-vs-allticks');
+figs['missing-category-order'] = require('@mocks/missing-category-order');
 figs['multicategory'] = require('@mocks/multicategory');
 figs['multicategory_histograms'] = require('@mocks/multicategory_histograms');
 figs['multicategory-inside-ticks'] = require('@mocks/multicategory-inside-ticks');
@@ -1790,6 +1858,14 @@ figs['parcats_numeric_sort'] = require('@mocks/parcats_numeric_sort');
 figs['parcats_reordered'] = require('@mocks/parcats_reordered');
 figs['parcats_unbundled'] = require('@mocks/parcats_unbundled');
 figs['percent_error_bar'] = require('@mocks/percent_error_bar');
+figs['period_positioning'] = require('@mocks/period_positioning');
+figs['period_positioning2'] = require('@mocks/period_positioning2');
+figs['period_positioning3'] = require('@mocks/period_positioning3');
+figs['period_positioning4'] = require('@mocks/period_positioning4');
+figs['period_positioning5'] = require('@mocks/period_positioning5');
+figs['period_positioning6'] = require('@mocks/period_positioning6');
+figs['period_positioning7'] = require('@mocks/period_positioning7');
+figs['period_positioning8'] = require('@mocks/period_positioning8');
 figs['picnic_heatmap'] = require('@mocks/picnic_heatmap');
 figs['pie_aggregated'] = require('@mocks/pie_aggregated');
 figs['pie_automargin'] = require('@mocks/pie_automargin');
@@ -1816,7 +1892,6 @@ figs['pie_title_variations'] = require('@mocks/pie_title_variations');
 // figs['plot_types'] = require('@mocks/plot_types');
 figs['point-selection'] = require('@mocks/point-selection');
 figs['point-selection2'] = require('@mocks/point-selection2');
-// figs['polar_area_chart'] = require('@mocks/polar_area_chart');
 figs['polar_bar-overlay'] = require('@mocks/polar_bar-overlay');
 figs['polar_bar-stacked'] = require('@mocks/polar_bar-stacked');
 figs['polar_bar-width-base-offset'] = require('@mocks/polar_bar-width-base-offset');
@@ -1856,6 +1931,7 @@ figs['range_slider_rangemode'] = require('@mocks/range_slider_rangemode');
 figs['range_slider_reversed-range'] = require('@mocks/range_slider_reversed-range');
 figs['range_slider_top_axis'] = require('@mocks/range_slider_top_axis');
 figs['rdbu_heatmap'] = require('@mocks/rdbu_heatmap');
+figs['reversed-axis-dividers'] = require('@mocks/reversed-axis-dividers');
 figs['sankey_circular'] = require('@mocks/sankey_circular');
 figs['sankey_circular_large'] = require('@mocks/sankey_circular_large');
 figs['sankey_circular_process'] = require('@mocks/sankey_circular_process');
@@ -1944,6 +2020,7 @@ figs['sunburst_values'] = require('@mocks/sunburst_values');
 figs['sunburst_values_colorscale'] = require('@mocks/sunburst_values_colorscale');
 figs['sunburst_with-without_values'] = require('@mocks/sunburst_with-without_values');
 figs['sunburst_zero_values_textfit'] = require('@mocks/sunburst_zero_values_textfit');
+figs['symbols_string-numbers'] = require('@mocks/symbols_string-numbers');
 figs['table_latex_multitrace_scatter'] = require('@mocks/table_latex_multitrace_scatter');
 // figs['table_plain_birds'] = require('@mocks/table_plain_birds');
 figs['table_ragged'] = require('@mocks/table_ragged');
@@ -1970,8 +2047,19 @@ figs['tick_attributes'] = require('@mocks/tick_attributes');
 figs['tick_prefix_suffix'] = require('@mocks/tick_prefix_suffix');
 figs['tick_prefix_suffix_exponent'] = require('@mocks/tick_prefix_suffix_exponent');
 figs['tick-datafn'] = require('@mocks/tick-datafn');
+figs['tick-increment'] = require('@mocks/tick-increment');
+figs['tick-percent'] = require('@mocks/tick-percent');
 figs['tickformat'] = require('@mocks/tickformat');
 figs['tickformatstops'] = require('@mocks/tickformatstops');
+figs['ticklabelposition-0'] = require('@mocks/ticklabelposition-0');
+figs['ticklabelposition-1'] = require('@mocks/ticklabelposition-1');
+figs['ticklabelposition-2'] = require('@mocks/ticklabelposition-2');
+figs['ticklabelposition-3'] = require('@mocks/ticklabelposition-3');
+figs['ticklabelposition-4'] = require('@mocks/ticklabelposition-4');
+figs['ticklabelposition-a'] = require('@mocks/ticklabelposition-a');
+figs['ticklabelposition-b'] = require('@mocks/ticklabelposition-b');
+figs['ticklabelposition-c'] = require('@mocks/ticklabelposition-c');
+figs['ticklabelposition-d'] = require('@mocks/ticklabelposition-d');
 figs['tickson_boundaries'] = require('@mocks/tickson_boundaries');
 // figs['titles-avoid-labels'] = require('@mocks/titles-avoid-labels');
 // figs['trace_metatext'] = require('@mocks/trace_metatext');
@@ -1988,6 +2076,7 @@ figs['treemap_packages_colorscale_novalue'] = require('@mocks/treemap_packages_c
 figs['treemap_packings'] = require('@mocks/treemap_packings');
 figs['treemap_pad_mirror'] = require('@mocks/treemap_pad_mirror');
 figs['treemap_pad_transpose'] = require('@mocks/treemap_pad_transpose');
+figs['treemap_root-color'] = require('@mocks/treemap_root-color');
 figs['treemap_sunburst_basic'] = require('@mocks/treemap_sunburst_basic');
 figs['treemap_sunburst_marker_colors'] = require('@mocks/treemap_sunburst_marker_colors');
 figs['treemap_textfit'] = require('@mocks/treemap_textfit');
@@ -2029,6 +2118,7 @@ figs['uniformtext_treemap_coffee-maxdepth3'] = require('@mocks/uniformtext_treem
 // figs['updatemenus'] = require('@mocks/updatemenus');
 figs['updatemenus_positioning'] = require('@mocks/updatemenus_positioning');
 figs['updatemenus_toggle'] = require('@mocks/updatemenus_toggle');
+figs['vertical-tickangles'] = require('@mocks/vertical-tickangles');
 figs['violin_bandwidth-edge-cases'] = require('@mocks/violin_bandwidth-edge-cases');
 figs['violin_box_multiple_widths'] = require('@mocks/violin_box_multiple_widths');
 figs['violin_box_overlay'] = require('@mocks/violin_box_overlay');
@@ -2073,7 +2163,6 @@ figs['waterfall-offsetgroups'] = require('@mocks/waterfall-offsetgroups');
 // figs['yignbu_heatmap'] = require('@mocks/yignbu_heatmap');
 // figs['yiorrd_heatmap'] = require('@mocks/yiorrd_heatmap');
 figs['zsmooth_methods'] = require('@mocks/zsmooth_methods');
-
 
 describe('@noCI mock validation', function() {
     list.forEach(function(name) {

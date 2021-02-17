@@ -1,14 +1,6 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
-var d3 = require('d3');
+var d3 = require('@plotly/d3');
 
 var Lib = require('../../lib');
 var Plots = require('../../plots/plots');
@@ -89,7 +81,6 @@ module.exports = function draw(gd, opts) {
     if(title.text) {
         var titleEl = Lib.ensureSingle(scrollBox, 'text', 'legendtitletext');
         titleEl.attr('text-anchor', 'start')
-            .classed('user-select-none', true)
             .call(Drawing.font, title.font)
             .text(title.text);
 
@@ -378,6 +369,7 @@ function clickOrDoubleClick(gd, legend, legendItem, numClicks, evt) {
 
     if(numClicks === 1) {
         legend._clickTimeout = setTimeout(function() {
+            if(!gd._fullLayout) return;
             handleClick(legendItem, gd, numClicks);
         }, gd._context.doubleClickDelay);
     } else if(numClicks === 2) {
@@ -410,11 +402,11 @@ function drawTexts(g, gd, opts) {
     var textEl = Lib.ensureSingle(g, 'text', 'legendtext');
 
     textEl.attr('text-anchor', 'start')
-        .classed('user-select-none', true)
         .call(Drawing.font, opts.font)
         .text(isEditable ? ensureLength(name, maxNameLength) : name);
 
-    svgTextUtils.positionText(textEl, constants.textGap, 0);
+    var textGap = opts.itemwidth + constants.itemGap * 2;
+    svgTextUtils.positionText(textEl, textGap, 0);
 
     if(isEditable) {
         textEl.call(svgTextUtils.makeEditable, {gd: gd, text: name})
@@ -467,10 +459,13 @@ function setupTraceToggle(g, gd) {
     var numClicks = 1;
 
     var traceToggle = Lib.ensureSingle(g, 'rect', 'legendtoggle', function(s) {
-        s.style('cursor', 'pointer')
-            .attr('pointer-events', 'all')
-            .call(Color.fill, 'rgba(0,0,0,0)');
+        if(!gd._context.staticPlot) {
+            s.style('cursor', 'pointer').attr('pointer-events', 'all');
+        }
+        s.call(Color.fill, 'rgba(0,0,0,0)');
     });
+
+    if(gd._context.staticPlot) return;
 
     traceToggle.on('mousedown', function() {
         newMouseDownTime = (new Date()).getTime();
@@ -541,7 +536,8 @@ function computeTextDimensions(g, gd, opts) {
         // to avoid getBoundingClientRect
         var textY = lineHeight * ((textLines - 1) / 2 - 0.3);
         if(legendItem) {
-            svgTextUtils.positionText(textEl, constants.textGap, -textY);
+            var textGap = opts.itemwidth + constants.itemGap * 2;
+            svgTextUtils.positionText(textEl, textGap, -textY);
         } else { // case of title
             svgTextUtils.positionText(textEl, constants.titlePad + bw, lineHeight + bw);
         }
@@ -594,8 +590,8 @@ function computeLegendDimensions(gd, groups, traces, opts) {
 
     var bw = opts.borderwidth;
     var bw2 = 2 * bw;
-    var textGap = constants.textGap;
     var itemGap = constants.itemGap;
+    var textGap = opts.itemwidth + itemGap * 2;
     var endPad = 2 * (bw + itemGap);
 
     var yanchor = getYanchor(opts);
@@ -708,7 +704,7 @@ function computeLegendDimensions(gd, groups, traces, opts) {
                 var w = textGap + d[0].width;
                 var next = (oneRowLegend ? w : maxItemWidth) + itemGap;
 
-                if((next + bw + offsetX) > opts._maxWidth) {
+                if((next + bw + offsetX - itemGap) >= opts._maxWidth) {
                     maxRowWidth = Math.max(maxRowWidth, rowWidth);
                     offsetX = 0;
                     offsetY += maxItemHeightInRow;

@@ -1,9 +1,11 @@
 var Plotly = require('@lib/index');
 
-var d3 = require('d3');
+var d3Select = require('../../strict-d3').select;
+var d3SelectAll = require('../../strict-d3').selectAll;
 var createGraphDiv = require('../assets/create_graph_div');
 var destroyGraphDiv = require('../assets/destroy_graph_div');
 var supplyAllDefaults = require('../assets/supply_defaults');
+
 
 describe('Fx defaults', function() {
     'use strict';
@@ -222,8 +224,8 @@ describe('relayout', function() {
 
     it('should update main drag with correct', function(done) {
         function assertMainDrag(cursor, isActive) {
-            expect(d3.selectAll('rect.nsewdrag').size()).toEqual(1, 'number of nodes');
-            var mainDrag = d3.select('rect.nsewdrag');
+            expect(d3SelectAll('rect.nsewdrag').size()).toEqual(1, 'number of nodes');
+            var mainDrag = d3Select('rect.nsewdrag');
             var node = mainDrag.node();
 
             expect(window.getComputedStyle(node).cursor).toBe(cursor, 'cursor ' + cursor);
@@ -231,7 +233,7 @@ describe('relayout', function() {
             expect(!!node.onmousedown).toBe(isActive, 'mousedown handler');
         }
 
-        Plotly.plot(gd, [{
+        Plotly.newPlot(gd, [{
             y: [2, 1, 2]
         }]).then(function() {
             assertMainDrag('crosshair', true);
@@ -268,6 +270,6 @@ describe('relayout', function() {
             return Plotly.relayout(gd, 'xaxis.fixedrange', false);
         }).then(function() {
             assertMainDrag('ew-resize', true);
-        }).then(done);
+        }).then(done, done.fail);
     });
 });

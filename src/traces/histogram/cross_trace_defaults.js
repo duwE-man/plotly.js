@@ -1,11 +1,3 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
 var Lib = require('../../lib');
@@ -15,7 +7,7 @@ var traceIs = require('../../registry').traceIs;
 var handleGroupingDefaults = require('../bar/defaults').handleGroupingDefaults;
 
 var nestedProperty = Lib.nestedProperty;
-var getAxisGroup = axisIds.getAxisGroup;
+var getAxisGroup = require('../../plots/cartesian/constraints').getAxisGroup;
 
 var BINATTRS = [
     {aStr: {x: 'xbins.start', y: 'ybins.start'}, name: 'start'},
@@ -174,10 +166,9 @@ module.exports = function crossTraceDefaults(fullData, fullLayout) {
         }
 
         var binGroupFound = false;
-        for(i = 0; i < traces.length; i++) {
-            traceOut = traces[i];
+        if(traces.length) {
+            traceOut = traces[0];
             binGroupFound = coerce('bingroup');
-            break;
         }
 
         groupName = binGroupFound || groupName;

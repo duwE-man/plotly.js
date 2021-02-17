@@ -1,19 +1,12 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
-var d3 = require('d3');
+var d3 = require('@plotly/d3');
 
 var Plots = require('../../plots/plots');
 var Color = require('../color');
 var Drawing = require('../drawing');
 var Lib = require('../../lib');
+var strTranslate = Lib.strTranslate;
 var svgTextUtils = require('../../lib/svg_text_utils');
 var arrayEditor = require('../../plot_api/plot_template').arrayEditor;
 
@@ -302,11 +295,10 @@ function drawCurrentValue(sliderGroup, sliderOpts, valueOverride) {
     }
 
     var text = Lib.ensureSingle(sliderGroup, 'text', constants.labelClass, function(s) {
-        s.classed('user-select-none', true)
-            .attr({
-                'text-anchor': textAnchor,
-                'data-notex': 1
-            });
+        s.attr({
+            'text-anchor': textAnchor,
+            'data-notex': 1
+        });
     });
 
     var str = sliderOpts.currentvalue.prefix ? sliderOpts.currentvalue.prefix : '';
@@ -357,11 +349,10 @@ function drawGrip(sliderGroup, gd, sliderOpts) {
 
 function drawLabel(item, data, sliderOpts) {
     var text = Lib.ensureSingle(item, 'text', constants.labelClass, function(s) {
-        s.classed('user-select-none', true)
-            .attr({
-                'text-anchor': 'middle',
-                'data-notex': 1
-            });
+        s.attr({
+            'text-anchor': 'middle',
+            'data-notex': 1
+        });
     });
 
     var tx = data.step.label;
@@ -572,9 +563,9 @@ function setGripPosition(sliderGroup, sliderOpts, doTransition) {
             .ease(sliderOpts.transition.easing);
     }
 
-    // Drawing.setTranslate doesn't work here becasue of the transition duck-typing.
+    // Drawing.setTranslate doesn't work here because of the transition duck-typing.
     // It's also not necessary because there are no other transitions to preserve.
-    el.attr('transform', 'translate(' + (x - constants.gripWidth * 0.5) + ',' + (sliderOpts._dims.currentValueTotalHeight) + ')');
+    el.attr('transform', strTranslate(x - constants.gripWidth * 0.5, sliderOpts._dims.currentValueTotalHeight));
 }
 
 // Convert a number from [0-1] to a pixel position relative to the slider group container:

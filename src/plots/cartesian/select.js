@@ -1,12 +1,3 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
-
 'use strict';
 
 var polybool = require('polybooljs');
@@ -67,6 +58,14 @@ function prepSelect(e, startX, startY, dragOptions, mode) {
     var transform = getTransform(plotinfo);
     var x0 = startX - dragBBox.left;
     var y0 = startY - dragBBox.top;
+
+    fullLayout._calcInverseTransform(gd);
+    var transformedCoords = Lib.apply3DTransform(fullLayout._invTransform)(x0, y0);
+    x0 = transformedCoords[0];
+    y0 = transformedCoords[1];
+    var scaleX = fullLayout._invScaleX;
+    var scaleY = fullLayout._invScaleY;
+
     var x1 = x0;
     var y1 = y0;
     var path0 = 'M' + x0 + ',' + y0;
@@ -156,8 +155,8 @@ function prepSelect(e, startX, startY, dragOptions, mode) {
     }
 
     dragOptions.moveFn = function(dx0, dy0) {
-        x1 = Math.max(0, Math.min(pw, dx0 + x0));
-        y1 = Math.max(0, Math.min(ph, dy0 + y0));
+        x1 = Math.max(0, Math.min(pw, scaleX * dx0 + x0));
+        y1 = Math.max(0, Math.min(ph, scaleY * dy0 + y0));
 
         var dx = Math.abs(x1 - x0);
         var dy = Math.abs(y1 - y0);
@@ -347,9 +346,9 @@ function prepSelect(e, startX, startY, dragOptions, mode) {
                 }
 
                 if(clickmode === 'event') {
-                    // TODO: remove in v2 - this was probably never intended to work as it does,
+                    // TODO: remove in v3 - this was probably never intended to work as it does,
                     // but in case anyone depends on it we don't want to break it now.
-                    // Note that click-to-select introduced pre v2 also emitts proper
+                    // Note that click-to-select introduced pre v3 also emitts proper
                     // event data when clickmode is having 'select' in its flag list.
                     gd.emit('plotly_selected', undefined);
                 }

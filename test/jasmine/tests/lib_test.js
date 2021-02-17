@@ -3,12 +3,13 @@ var setCursor = require('@src/lib/setcursor');
 var overrideCursor = require('@src/lib/override_cursor');
 var config = require('@src/plot_api/plot_config').dfltConfig;
 
-var d3 = require('d3');
+var d3Select = require('../../strict-d3').select;
+var d3SelectAll = require('../../strict-d3').selectAll;
 var Plotly = require('@lib');
 var Plots = require('@src/plots/plots');
 var createGraphDiv = require('../assets/create_graph_div');
 var destroyGraphDiv = require('../assets/destroy_graph_div');
-var failTest = require('../assets/fail_test');
+
 
 describe('Test lib.js:', function() {
     'use strict';
@@ -654,13 +655,13 @@ describe('Test lib.js:', function() {
         //
         //   // => {marker: {range: [null, 2]}}
         //
-        // This case *does* work becuase the array merging does not require a deep extend:
+        // This case *does* work because the array merging does not require a deep extend:
         //
         //   Lib.expandObjectPaths({'range[0]': 5, 'range[1]': 2}
         //
         //   // => {range: [5, 2]}
         //
-        // Finally note that this case works fine becuase there's no merge necessary:
+        // Finally note that this case works fine because there's no merge necessary:
         //
         //   Lib.expandObjectPaths({'marker.range[1]': 2})
         //
@@ -778,7 +779,7 @@ describe('Test lib.js:', function() {
                 expect(sizeOut).toBe(outObj.testMarker.testSize);
             });
 
-            it('should set the default and return false if the user input is not valid', function() {
+            it('should set and return the default if the user input is not valid', function() {
                 var colVal = 'r';
                 var sizeVal = 'aaaaah!';
                 var attrs = {
@@ -792,78 +793,10 @@ describe('Test lib.js:', function() {
                 var colOut = coerce2(obj, outObj, attrs, 'testMarker.testColor');
                 var sizeOut = coerce2(obj, outObj, attrs, 'testMarker.testSize');
 
-                expect(colOut).toBe(false);
-                expect(outObj.testMarker.testColor).toBe('rgba(0, 0, 0, 0)');
-                expect(sizeOut).toBe(false);
-                expect(outObj.testMarker.testSize).toBe(20);
-            });
-
-            it('should set the user input', function() {
-                var colVal = 'red';
-                var sizeVal = '1e2';
-                var attrs = {
-                    testMarker: {
-                        testColor: {valType: 'color', dflt: 'rgba(0, 0, 0, 0)'},
-                        testSize: {valType: 'number', dflt: 20}
-                    }
-                };
-                var obj = {testMarker: {testColor: colVal, testSize: sizeVal}};
-                var outObj = {};
-                var colOut = coerce2(obj, outObj, attrs, 'testMarker.testColor');
-                var sizeOut = coerce2(obj, outObj, attrs, 'testMarker.testSize');
-
-                expect(colOut).toBe('red');
-                expect(colOut).toBe(outObj.testMarker.testColor);
-                expect(sizeOut).toBe(100);
+                expect(colOut).toBe('rgba(0, 0, 0, 0)');
                 expect(sizeOut).toBe(outObj.testMarker.testSize);
-            });
-
-            it('should set to template if the container input is not valid', function() {
-                var attrs = {
-                    testMarker: {
-                        testColor: {valType: 'color', dflt: 'rgba(0, 0, 0, 0)'},
-                        testSize: {valType: 'number', dflt: 20}
-                    }
-                };
-                var obj = {
-                    testMarker: {testColor: 'invalid', testSize: 'invalid'}
-                };
-                var outObj = {
-                    _template: {
-                        testMarker: {testColor: 'red', testSize: '1e2'}
-                    }
-                };
-                var colOut = coerce2(obj, outObj, attrs, 'testMarker.testColor');
-                var sizeOut = coerce2(obj, outObj, attrs, 'testMarker.testSize');
-
-                expect(colOut).toBe('red');
-                expect(colOut).toBe(outObj.testMarker.testColor);
-                expect(sizeOut).toBe(100);
+                expect(sizeOut).toBe(20);
                 expect(sizeOut).toBe(outObj.testMarker.testSize);
-            });
-
-            it('should set to default and return false if the both container and template inputs are not valid', function() {
-                var attrs = {
-                    testMarker: {
-                        testColor: {valType: 'color', dflt: 'rgba(0, 0, 0, 0)'},
-                        testSize: {valType: 'number', dflt: 20}
-                    }
-                };
-                var obj = {
-                    testMarker: {testColor: 'invalid', testSize: 'invalid'}
-                };
-                var outObj = {
-                    _template: {
-                        testMarker: {testColor: 'invalid', testSize: 'invalid'}
-                    }
-                };
-                var colOut = coerce2(obj, outObj, attrs, 'testMarker.testColor');
-                var sizeOut = coerce2(obj, outObj, attrs, 'testMarker.testSize');
-
-                expect(colOut).toBe(false);
-                expect(outObj.testMarker.testColor).toBe('rgba(0, 0, 0, 0)');
-                expect(sizeOut).toBe(false);
-                expect(outObj.testMarker.testSize).toBe(20);
             });
 
             it('should return false if there is no user input', function() {
@@ -1432,7 +1365,7 @@ describe('Test lib.js:', function() {
 
     describe('setCursor', function() {
         beforeEach(function() {
-            this.el3 = d3.select(createGraphDiv());
+            this.el3 = d3Select(createGraphDiv());
         });
 
         afterEach(destroyGraphDiv);
@@ -1480,7 +1413,7 @@ describe('Test lib.js:', function() {
 
     describe('overrideCursor', function() {
         beforeEach(function() {
-            this.el3 = d3.select(createGraphDiv());
+            this.el3 = d3Select(createGraphDiv());
         });
 
         afterEach(destroyGraphDiv);
@@ -1707,14 +1640,11 @@ describe('Test lib.js:', function() {
 
         it('recognizes real and duck typed selections', function() {
             var yesSelections = [
-                d3.select(gd),
+                d3Select(gd),
                 // this is what got us into trouble actually - d3 selections can
                 // contain non-nodes - say for example d3 selections! then they
                 // don't work correctly. But it makes a convenient test!
-                d3.select(1),
-                // just showing what we actually do in this function: duck type
-                // using the `classed` method.
-                {classed: function(v) { return !!v; }}
+                d3Select(1)
             ];
 
             yesSelections.forEach(function(v) {
@@ -1743,28 +1673,25 @@ describe('Test lib.js:', function() {
         var stashLogLevel;
         var stashOnGraphLogLevel;
 
-        function consoleFn(name, hasApply, messages) {
+        function consoleFn(name, messages) {
             var out = function() {
-                if(hasApply) expect(this).toBe(window.console);
                 var args = [];
                 for(var i = 0; i < arguments.length; i++) args.push(arguments[i]);
                 messages.push([name, args]);
             };
 
-            if(!hasApply) out.apply = undefined;
-
             return out;
         }
 
-        function mockConsole(hasApply, hasTrace, hasError) {
+        function mockConsole() {
             var out = {
                 MESSAGES: []
             };
-            out.log = consoleFn('log', hasApply, out.MESSAGES);
+            out.log = consoleFn('log', out.MESSAGES);
 
-            if(hasError) out.error = consoleFn('error', hasApply, out.MESSAGES);
+            out.error = consoleFn('error', out.MESSAGES);
 
-            if(hasTrace) out.trace = consoleFn('trace', hasApply, out.MESSAGES);
+            out.trace = consoleFn('trace', out.MESSAGES);
 
             return out;
         }
@@ -1781,8 +1708,8 @@ describe('Test lib.js:', function() {
             config.notifyOnLogging = stashOnGraphLogLevel;
         });
 
-        it('emits one console message if apply is available', function() {
-            var c = window.console = mockConsole(true, true, true);
+        it('emits one console message', function() {
+            var c = window.console = mockConsole();
             config.logging = 2;
 
             Lib.log('tick', 'tock', 'tick', 'tock', 1);
@@ -1796,50 +1723,8 @@ describe('Test lib.js:', function() {
             ]);
         });
 
-        it('falls back on console.log if no trace', function() {
-            var c = window.console = mockConsole(true, false, true);
-            config.logging = 2;
-
-            Lib.log('Hi');
-            Lib.warn(42);
-
-            expect(c.MESSAGES).toEqual([
-                ['log', ['LOG:', 'Hi']],
-                ['log', ['WARN:', 42]]
-            ]);
-        });
-
-        it('falls back on separate calls if no apply', function() {
-            var c = window.console = mockConsole(false, false, true);
-            config.logging = 2;
-
-            Lib.log('tick', 'tock', 'tick', 'tock', 1);
-            Lib.warn('I\'m', 'a', 'little', 'cuckoo', 'clock', [1, 2]);
-            Lib.error('cuckoo!', 'cuckoo!!!', {a: 1, b: 2});
-
-            expect(c.MESSAGES).toEqual([
-                ['log', ['LOG:']],
-                ['log', ['tick']],
-                ['log', ['tock']],
-                ['log', ['tick']],
-                ['log', ['tock']],
-                ['log', [1]],
-                ['log', ['WARN:']],
-                ['log', ['I\'m']],
-                ['log', ['a']],
-                ['log', ['little']],
-                ['log', ['cuckoo']],
-                ['log', ['clock']],
-                ['log', [[1, 2]]],
-                ['error', ['ERROR:']],
-                ['error', ['cuckoo!']],
-                ['error', ['cuckoo!!!']],
-                ['error', [{a: 1, b: 2}]]
-            ]);
-        });
-
         it('omits .log at log level 1', function() {
-            var c = window.console = mockConsole(true, true, true);
+            var c = window.console = mockConsole();
             config.logging = 1;
 
             Lib.log(1);
@@ -1853,7 +1738,7 @@ describe('Test lib.js:', function() {
         });
 
         it('logs nothing at log level 0', function() {
-            var c = window.console = mockConsole(true, true, true);
+            var c = window.console = mockConsole();
             config.logging = 0;
 
             Lib.log(1);
@@ -1863,28 +1748,12 @@ describe('Test lib.js:', function() {
             expect(c.MESSAGES).toEqual([]);
         });
 
-        it('falls back on simple log if there is no console.error', function() {
-            // TODO
-
-            var c = window.console = mockConsole(true, true, false);
-            config.logging = 2;
-
-            Lib.error('who are you', 'who who... are you', {a: 1, b: 2});
-
-            expect(c.MESSAGES).toEqual([
-                ['log', ['ERROR:']],
-                ['log', ['who are you']],
-                ['log', ['who who... are you']],
-                ['log', [{a: 1, b: 2}]]
-            ]);
-        });
-
         describe('should log message in notifier div in accordance notifyOnLogging config option', function() {
             var query = '.notifier-note';
 
             beforeEach(function(done) {
-                d3.selectAll(query).each(function() {
-                    d3.select(this).select('button').node().click();
+                d3SelectAll(query).each(function() {
+                    d3Select(this).select('button').node().click();
                 });
                 setTimeout(done, 1000);
             });
@@ -1896,13 +1765,13 @@ describe('Test lib.js:', function() {
                 Lib.warn('warn');
                 Lib.error('error!');
 
-                var notes = d3.selectAll(query);
+                var notes = d3SelectAll(query);
 
                 expect(notes.size()).toBe(exp.length, '# of notifier notes');
 
                 var actual = [];
                 notes.each(function() {
-                    actual.push(d3.select(this).select('p').text());
+                    actual.push(d3Select(this).select('p').text());
                 });
                 expect(actual).toEqual(exp);
             }
@@ -2806,7 +2675,7 @@ describe('Queue', function() {
     });
 
     it('should not fill in undoQueue by default', function(done) {
-        Plotly.plot(gd, [{
+        Plotly.newPlot(gd, [{
             y: [2, 1, 2]
         }]).then(function() {
             expect(gd.undoQueue).toBeUndefined();
@@ -2820,15 +2689,14 @@ describe('Queue', function() {
         }).then(function() {
             expect(gd.undoQueue.index).toEqual(0);
             expect(gd.undoQueue.queue).toEqual([]);
-
-            done();
-        });
+        })
+        .then(done, done.fail);
     });
 
     it('should fill in undoQueue up to value found in *queueLength* config', function(done) {
         Plotly.setPlotConfig({ queueLength: 2 });
 
-        Plotly.plot(gd, [{
+        Plotly.newPlot(gd, [{
             y: [2, 1, 2]
         }])
         .then(function() {
@@ -2892,7 +2760,6 @@ describe('Queue', function() {
             expect(gd.undoQueue.queue[1].redo.args[0][1])
                 .toEqual({ 'transforms[0]': null });
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 });

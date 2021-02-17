@@ -1,14 +1,6 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
-var d3 = require('d3');
+var d3 = require('@plotly/d3');
 var tinycolor = require('tinycolor2');
 
 var Plots = require('../../plots/plots');
@@ -16,6 +8,7 @@ var Registry = require('../../registry');
 var Axes = require('../../plots/cartesian/axes');
 var dragElement = require('../dragelement');
 var Lib = require('../../lib');
+var strTranslate = Lib.strTranslate;
 var extendFlat = require('../../lib/extend').extendFlat;
 var setCursor = require('../../lib/setcursor');
 var Drawing = require('../drawing');
@@ -270,10 +263,10 @@ function drawColorBar(g, opts, gd) {
 
     ax.setScale();
 
-    g.attr('transform', 'translate(' + Math.round(gs.l) + ',' + Math.round(gs.t) + ')');
+    g.attr('transform', strTranslate(Math.round(gs.l), Math.round(gs.t)));
 
     var titleCont = g.select('.' + cn.cbtitleunshift)
-        .attr('transform', 'translate(-' + Math.round(gs.l) + ',-' + Math.round(gs.t) + ')');
+        .attr('transform', strTranslate(-Math.round(gs.l), -Math.round(gs.t)));
 
     var axLayer = g.select('.' + cn.cbaxis);
     var titleEl;
@@ -385,18 +378,19 @@ function drawColorBar(g, opts, gd) {
                     titleTrans[1] += (1 - nlines) * lineSize;
                 }
 
-                titleGroup.attr('transform', 'translate(' + titleTrans + ')');
+                titleGroup.attr('transform', strTranslate(titleTrans[0], titleTrans[1]));
                 ax.setScale();
             }
         }
 
         g.selectAll('.' + cn.cbfills + ',.' + cn.cblines)
-            .attr('transform', 'translate(0,' + Math.round(gs.h * (1 - ax.domain[1])) + ')');
+            .attr('transform', strTranslate(0, Math.round(gs.h * (1 - ax.domain[1]))));
 
-        axLayer.attr('transform', 'translate(0,' + Math.round(-gs.t) + ')');
+        axLayer.attr('transform', strTranslate(0, Math.round(-gs.t)));
 
         var fills = g.select('.' + cn.cbfills)
             .selectAll('rect.' + cn.cbfill)
+            .attr('style', '')
             .data(fillLevels);
         fills.enter().append('rect')
             .classed(cn.cbfill, true)
@@ -460,20 +454,19 @@ function drawColorBar(g, opts, gd) {
             (opts.outlinewidth || 0) / 2 - (opts.ticks === 'outside' ? 1 : 0);
 
         var vals = Axes.calcTicks(ax);
-        var transFn = Axes.makeTransFn(ax);
         var tickSign = Axes.getTickSigns(ax)[2];
 
         Axes.drawTicks(gd, ax, {
             vals: ax.ticks === 'inside' ? Axes.clipEnds(ax, vals) : vals,
             layer: axLayer,
             path: Axes.makeTickPath(ax, shift, tickSign),
-            transFn: transFn
+            transFn: Axes.makeTransTickFn(ax)
         });
 
         return Axes.drawLabels(gd, ax, {
             vals: vals,
             layer: axLayer,
-            transFn: transFn,
+            transFn: Axes.makeTransTickLabelFn(ax),
             labelFns: Axes.makeLabelFns(ax, shift)
         });
     }
@@ -483,7 +476,11 @@ function drawColorBar(g, opts, gd) {
     // TODO: why are we redrawing multiple times now with this?
     // I guess autoMargin doesn't like being post-promise?
     function positionCB() {
-        var innerWidth = thickPx + opts.outlinewidth / 2 + Drawing.bBox(axLayer.node()).width;
+        var innerWidth = thickPx + opts.outlinewidth / 2;
+        if(ax.ticklabelposition.indexOf('inside') === -1) {
+            innerWidth += Drawing.bBox(axLayer.node()).width;
+        }
+
         titleEl = titleCont.select('text');
 
         if(titleEl.node() && !titleEl.classed(cn.jsPlaceholder)) {
@@ -528,7 +525,7 @@ function drawColorBar(g, opts, gd) {
 
         // fix positioning for xanchor!='left'
         var xoffset = ({center: 0.5, right: 1}[opts.xanchor] || 0) * outerwidth;
-        g.attr('transform', 'translate(' + (gs.l - xoffset) + ',' + gs.t + ')');
+        g.attr('transform', strTranslate(gs.l - xoffset, gs.t));
 
         // auto margin adjustment
         var marginOpts = {};
@@ -584,7 +581,7 @@ function makeEditable(g, opts, gd) {
             setCursor(g);
         },
         moveFn: function(dx, dy) {
-            g.attr('transform', t0 + ' ' + 'translate(' + dx + ',' + dy + ')');
+            g.attr('transform', t0 + strTranslate(dx, dy));
 
             xf = dragElement.align(opts._xLeftFrac + (dx / gs.w), opts._thickFrac,
                 0, 1, opts.xanchor);
@@ -679,10 +676,12 @@ function mockColorBarAxis(gd, opts, zrange) {
         tickwidth: opts.tickwidth,
         tickcolor: opts.tickcolor,
         showticklabels: opts.showticklabels,
+        ticklabelposition: opts.ticklabelposition,
         tickfont: opts.tickfont,
         tickangle: opts.tickangle,
         tickformat: opts.tickformat,
         exponentformat: opts.exponentformat,
+        minexponent: opts.minexponent,
         separatethousands: opts.separatethousands,
         showexponent: opts.showexponent,
         showtickprefix: opts.showtickprefix,
@@ -706,6 +705,7 @@ function mockColorBarAxis(gd, opts, zrange) {
         font: fullLayout.font,
         noHover: true,
         noTickson: true,
+        noTicklabelmode: true,
         calendar: fullLayout.calendar  // not really necessary (yet?)
     };
 

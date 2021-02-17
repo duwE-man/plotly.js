@@ -1,11 +1,3 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
 var Lib = require('../../lib');
@@ -78,8 +70,8 @@ module.exports = function hoverPoints(pointData, xval, yval, hovermode) {
             // the normalized individual sizes, so that's what I'm doing here
             // for now.
             var sizeVal = orientation && (di.sNorm || di.s);
-            var xLabelVal = (orientation === 'h') ? sizeVal : di.x;
-            var yLabelVal = (orientation === 'v') ? sizeVal : di.y;
+            var xLabelVal = (orientation === 'h') ? sizeVal : di.orig_x !== undefined ? di.orig_x : di.x;
+            var yLabelVal = (orientation === 'v') ? sizeVal : di.orig_y !== undefined ? di.orig_y : di.y;
 
             Lib.extendFlat(pointData, {
                 color: getTraceColor(trace, di),

@@ -1,11 +1,3 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
 var scatterAttrs = require('../scatter/attributes');
@@ -29,6 +21,13 @@ module.exports = extendFlat({
     y0: extendFlat({}, scatterAttrs.y0, {impliedEdits: {ytype: 'scaled'}}),
     dy: extendFlat({}, scatterAttrs.dy, {impliedEdits: {ytype: 'scaled'}}),
 
+    xperiod: extendFlat({}, scatterAttrs.xperiod, {impliedEdits: {xtype: 'scaled'}}),
+    yperiod: extendFlat({}, scatterAttrs.yperiod, {impliedEdits: {ytype: 'scaled'}}),
+    xperiod0: extendFlat({}, scatterAttrs.xperiod0, {impliedEdits: {xtype: 'scaled'}}),
+    yperiod0: extendFlat({}, scatterAttrs.yperiod0, {impliedEdits: {ytype: 'scaled'}}),
+    xperiodalignment: extendFlat({}, scatterAttrs.xperiodalignment, {impliedEdits: {xtype: 'scaled'}}),
+    yperiodalignment: extendFlat({}, scatterAttrs.yperiodalignment, {impliedEdits: {ytype: 'scaled'}}),
+
     text: {
         valType: 'data_array',
         editType: 'calc',
@@ -42,14 +41,12 @@ module.exports = extendFlat({
     transpose: {
         valType: 'boolean',
         dflt: false,
-        role: 'info',
         editType: 'calc',
         description: 'Transposes the z data.'
     },
     xtype: {
         valType: 'enumerated',
         values: ['array', 'scaled'],
-        role: 'info',
         editType: 'calc+clearAxisTypes',
         description: [
             'If *array*, the heatmap\'s x coordinates are given by *x*',
@@ -61,7 +58,6 @@ module.exports = extendFlat({
     ytype: {
         valType: 'enumerated',
         values: ['array', 'scaled'],
-        role: 'info',
         editType: 'calc+clearAxisTypes',
         description: [
             'If *array*, the heatmap\'s y coordinates are given by *y*',
@@ -74,7 +70,6 @@ module.exports = extendFlat({
         valType: 'enumerated',
         values: ['fast', 'best', false],
         dflt: false,
-        role: 'style',
         editType: 'calc',
         description: [
             'Picks a smoothing algorithm use to smooth `z` data.'
@@ -83,7 +78,6 @@ module.exports = extendFlat({
     hoverongaps: {
         valType: 'boolean',
         dflt: true,
-        role: 'style',
         editType: 'none',
         description: [
             'Determines whether or not gaps',
@@ -93,7 +87,6 @@ module.exports = extendFlat({
     },
     connectgaps: {
         valType: 'boolean',
-        role: 'info',
         editType: 'calc',
         description: [
             'Determines whether or not gaps',
@@ -108,7 +101,6 @@ module.exports = extendFlat({
         valType: 'number',
         dflt: 0,
         min: 0,
-        role: 'style',
         editType: 'plot',
         description: 'Sets the horizontal gap (in pixels) between bricks.'
     },
@@ -116,14 +108,12 @@ module.exports = extendFlat({
         valType: 'number',
         dflt: 0,
         min: 0,
-        role: 'style',
         editType: 'plot',
         description: 'Sets the vertical gap (in pixels) between bricks.'
     },
     zhoverformat: {
         valType: 'string',
         dflt: '',
-        role: 'style',
         editType: 'none',
         description: [
             'Sets the hover text formatting rule using d3 formatting mini-languages',

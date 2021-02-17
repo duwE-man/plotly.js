@@ -4,10 +4,11 @@ var rgb = require('@src/components/color').rgb;
 
 var supplyLayoutDefaults = require('@src/plots/ternary/layout_defaults');
 
-var d3 = require('d3');
+var d3Select = require('../../strict-d3').select;
+var d3SelectAll = require('../../strict-d3').selectAll;
 var createGraphDiv = require('../assets/create_graph_div');
 var destroyGraphDiv = require('../assets/destroy_graph_div');
-var failTest = require('../assets/fail_test');
+
 var mouseEvent = require('../assets/mouse_event');
 var click = require('../assets/click');
 var doubleClick = require('../assets/double_click');
@@ -35,7 +36,7 @@ describe('ternary plots', function() {
 
             var mockCopy = Lib.extendDeep({}, mock);
 
-            Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(done);
+            Plotly.newPlot(gd, mockCopy.data, mockCopy.layout).then(done);
         });
 
         it('should be able to toggle trace visibility', function(done) {
@@ -55,16 +56,15 @@ describe('ternary plots', function() {
                 return Plotly.restyle(gd, 'visible', true);
             }).then(function() {
                 expect(countTraces('scatter')).toEqual(1);
-
-                done();
-            });
+            })
+            .then(done, done.fail);
         });
 
         it('should be able to delete and add traces', function(done) {
             function checkTitles(cnt) {
-                expect(d3.selectAll('.g-atitle').size()).toBe(cnt, 'aaxis title');
-                expect(d3.selectAll('.g-btitle').size()).toBe(cnt, 'baxis title');
-                expect(d3.selectAll('.g-ctitle').size()).toBe(cnt, 'caxis title');
+                expect(d3SelectAll('.g-atitle').size()).toBe(cnt, 'aaxis title');
+                expect(d3SelectAll('.g-btitle').size()).toBe(cnt, 'baxis title');
+                expect(d3SelectAll('.g-ctitle').size()).toBe(cnt, 'caxis title');
             }
 
             expect(countTernarySubplot()).toEqual(1);
@@ -97,16 +97,15 @@ describe('ternary plots', function() {
                 expect(countTernarySubplot()).toEqual(1);
                 expect(countTraces('scatter')).toEqual(1);
                 checkTitles(1);
-
-                done();
-            });
+            })
+            .then(done, done.fail);
         });
 
         it('should be able to restyle', function(done) {
             Plotly.restyle(gd, { a: [[1, 2, 3]]}, 0).then(function() {
                 var transforms = [];
-                d3.selectAll('.ternary .point').each(function() {
-                    var point = d3.select(this);
+                d3SelectAll('.ternary .point').each(function() {
+                    var point = d3Select(this);
                     transforms.push(point.attr('transform'));
                 });
 
@@ -115,7 +114,8 @@ describe('ternary plots', function() {
                     'translate(118.53,170.59)',
                     'translate(248.76,117.69)'
                 ]);
-            }).then(done);
+            })
+            .then(done, done.fail);
         });
 
         it('should display to hover labels', function(done) {
@@ -127,7 +127,7 @@ describe('ternary plots', function() {
                 mouseEvent('mousemove', pointPos[0], pointPos[1]);
 
                 assertHoverLabelContent({nums: content}, msg);
-                assertHoverLabelStyle(d3.select('g.hovertext'), style, msg);
+                assertHoverLabelStyle(d3Select('g.hovertext'), style, msg);
             }
 
             check([
@@ -170,8 +170,7 @@ describe('ternary plots', function() {
                     fontFamily: 'Gravitas'
                 }, 'after hoverlabel styling restyle call');
             })
-            .catch(failTest)
-            .then(done);
+            .then(done, done.fail);
         });
 
         it('should respond to hover interactions by', function() {
@@ -243,8 +242,7 @@ describe('ternary plots', function() {
             .then(function() { assertRange(gd, [0.4435, 0.2462, 0.1523]); })
             .then(function() { return doubleClick(pointPos[0], pointPos[1]); })
             .then(function() { assertRange(gd, [0, 0, 0]); })
-            .catch(failTest)
-            .then(done);
+            .then(done, done.fail);
         });
     });
 
@@ -258,7 +256,7 @@ describe('ternary plots', function() {
             var mockCopy = Lib.extendDeep({}, mock);
             var config = { staticPlot: true };
 
-            Plotly.plot(gd, mockCopy.data, mockCopy.layout, config).then(done);
+            Plotly.newPlot(gd, mockCopy.data, mockCopy.layout, config).then(done);
         });
 
         it('should not respond to drag', function(done) {
@@ -270,8 +268,7 @@ describe('ternary plots', function() {
             .then(function() { assertRange(gd, range); })
             .then(function() { return doubleClick(390, 220); })
             .then(function() { assertRange(gd, range); })
-            .catch(failTest)
-            .then(done);
+            .then(done, done.fail);
         });
     });
 
@@ -285,12 +282,12 @@ describe('ternary plots', function() {
         ];
 
         function _assert(layers) {
-            var toplevel = d3.selectAll('g.ternary > .toplevel');
+            var toplevel = d3SelectAll('g.ternary > .toplevel');
 
             expect(toplevel.size()).toBe(layers.length, '# of layer');
 
             toplevel.each(function(d, i) {
-                var className = d3.select(this)
+                var className = d3Select(this)
                     .attr('class')
                     .split('toplevel ')[1];
 
@@ -298,7 +295,7 @@ describe('ternary plots', function() {
             });
         }
 
-        Plotly.plot(gd, fig).then(function() {
+        Plotly.newPlot(gd, fig).then(function() {
             _assert(dflt);
             return Plotly.relayout(gd, 'ternary.aaxis.layer', 'below traces');
         })
@@ -343,8 +340,7 @@ describe('ternary plots', function() {
         .then(function() {
             _assert(dflt);
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 
     it('should be able to relayout axis tickfont attributes', function(done) {
@@ -352,14 +348,14 @@ describe('ternary plots', function() {
         var fig = Lib.extendDeep({}, require('@mocks/ternary_simple.json'));
 
         function _assert(family, color, size) {
-            var tick = d3.select('g.aaxis > g.ytick > text').node();
+            var tick = d3Select('g.aaxis > g.ytick > text').node();
 
             expect(tick.style['font-family']).toBe(family, 'font family');
             expect(parseFloat(tick.style['font-size'])).toBe(size, 'font size');
             expect(tick.style.fill).toBe(color, 'font color');
         }
 
-        Plotly.plot(gd, fig).then(function() {
+        Plotly.newPlot(gd, fig).then(function() {
             _assert('"Open Sans", verdana, arial, sans-serif', 'rgb(204, 204, 204)', 12);
 
             return Plotly.relayout(gd, 'ternary.aaxis.tickfont.size', 5);
@@ -376,8 +372,7 @@ describe('ternary plots', function() {
         .then(function() {
             _assert('Roboto', 'rgb(255, 0, 0)', 20);
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 
     it('should be able to relayout axis title attributes', function(done) {
@@ -385,7 +380,7 @@ describe('ternary plots', function() {
         var fig = Lib.extendDeep({}, require('@mocks/ternary_simple.json'));
 
         function _assert(axisPrefix, title, family, color, size) {
-            var titleSel = d3.select('.' + axisPrefix + 'title');
+            var titleSel = d3Select('.' + axisPrefix + 'title');
             var titleNode = titleSel.node();
 
             var msg = 'for ' + axisPrefix + 'axis title';
@@ -395,7 +390,7 @@ describe('ternary plots', function() {
             expect(titleNode.style.fill).toBe(color, 'font color ' + msg);
         }
 
-        Plotly.plot(gd, fig).then(function() {
+        Plotly.newPlot(gd, fig).then(function() {
             _assert('a', 'Component A', '"Open Sans", verdana, arial, sans-serif', rgb('#ccc'), 14);
             _assert('b', 'chocolate', '"Open Sans", verdana, arial, sans-serif', rgb('#0f0'), 14);
             _assert('c', 'Component C', '"Open Sans", verdana, arial, sans-serif', rgb('#444'), 14);
@@ -425,8 +420,7 @@ describe('ternary plots', function() {
               _assert('b', 'white chocolate', 'sans-serif', rgb('blue'), 10);
               _assert('c', 'candy', 'serif', rgb('pink'), 30);
           })
-          .catch(failTest)
-          .then(done);
+          .then(done, done.fail);
     });
 
     it('should be able to hide/show ticks and tick labels', function(done) {
@@ -434,7 +428,7 @@ describe('ternary plots', function() {
         var fig = Lib.extendDeep({}, require('@mocks/ternary_simple.json'));
 
         function assertCnt(selector, expected, msg) {
-            var sel = d3.select(gd).selectAll(selector);
+            var sel = d3Select(gd).selectAll(selector);
             expect(sel.size()).toBe(expected, msg);
         }
 
@@ -454,7 +448,7 @@ describe('ternary plots', function() {
             };
         }
 
-        Plotly.plot(gd, fig)
+        Plotly.newPlot(gd, fig)
         .then(toggle(
             '.aaxis > .ytick > text', 'ternary.aaxis.showticklabels',
             [true, false], [4, 0]
@@ -479,14 +473,13 @@ describe('ternary plots', function() {
             '.caxis > path.ytick', 'ternary.caxis.ticks',
             ['outside', ''], [4, 0]
         ))
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 
     it('should render a-axis and c-axis with negative offsets', function(done) {
         var gd = createGraphDiv();
 
-        Plotly.plot(gd, [{
+        Plotly.newPlot(gd, [{
             type: 'scatterternary',
             a: [2, 1, 1],
             b: [1, 2, 1],
@@ -507,8 +500,7 @@ describe('ternary plots', function() {
             expect(subplot.aaxis._offset < 0).toBe(true);
             expect(subplot.caxis._offset < 0).toBe(true);
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 
     describe('plotly_relayouting', function() {
@@ -521,7 +513,7 @@ describe('ternary plots', function() {
                 fig.layout.dragmode = dragmode;
 
                 var gd = createGraphDiv();
-                Plotly.plot(gd, fig)
+                Plotly.newPlot(gd, fig)
                 .then(function() {
                     relayoutCallback = jasmine.createSpy('relayoutCallback');
                     gd.on('plotly_relayout', relayoutCallback);
@@ -534,18 +526,17 @@ describe('ternary plots', function() {
                     expect(events.length).toEqual(path.length - 1);
                     expect(relayoutCallback).toHaveBeenCalledTimes(1);
                 })
-                .catch(failTest)
-                .then(done);
+                .then(done, done.fail);
             });
         });
     });
 
     function countTernarySubplot() {
-        return d3.selectAll('.ternary').size();
+        return d3SelectAll('.ternary').size();
     }
 
     function countTraces(type) {
-        return d3.selectAll('.ternary').selectAll('g.trace.' + type).size();
+        return d3SelectAll('.ternary').selectAll('g.trace.' + type).size();
     }
 
     function assertRange(gd, expected) {
@@ -557,6 +548,175 @@ describe('ternary plots', function() {
         ];
         expect(actual).toBeCloseToArray(expected);
     }
+});
+
+describe('ternary plots when css transform is present', function() {
+    'use strict';
+
+    afterEach(destroyGraphDiv);
+
+    var mock = require('@mocks/ternary_simple.json');
+    var gd;
+
+    function transformPlot(gd, transformString) {
+        gd.style.webkitTransform = transformString;
+        gd.style.MozTransform = transformString;
+        gd.style.msTransform = transformString;
+        gd.style.OTransform = transformString;
+        gd.style.transform = transformString;
+    }
+
+    var cssTransform = 'translate(-25%, -25%) scale(0.5)';
+    var scale = 0.5;
+    var pointPos = [scale * 391, scale * 219];
+    var blankPos = [scale * 200, scale * 200];
+
+    beforeEach(function(done) {
+        gd = createGraphDiv();
+
+        var mockCopy = Lib.extendDeep({}, mock);
+
+        Plotly.newPlot(gd, mockCopy.data, mockCopy.layout)
+            .then(function() { transformPlot(gd, cssTransform); })
+            .then(done);
+    });
+
+    it('should respond zoom drag interactions', function(done) {
+        function assertRange(gd, expected) {
+            var ternary = gd._fullLayout.ternary;
+            var actual = [
+                ternary.aaxis.min,
+                ternary.baxis.min,
+                ternary.caxis.min
+            ];
+            expect(actual).toBeCloseToArray(expected);
+        }
+
+        assertRange(gd, [0.231, 0.2, 0.11]);
+
+        drag({path: [[scale * 383, scale * 213], [scale * 293, scale * 243]]})
+        .then(function() { assertRange(gd, [0.4486, 0.2480, 0.1453]); })
+        .then(function() { return doubleClick(pointPos[0], pointPos[1]); })
+        .then(function() { assertRange(gd, [0, 0, 0]); })
+        .then(done, done.fail);
+    });
+
+    it('should display to hover labels', function(done) {
+        mouseEvent('mousemove', blankPos[0], blankPos[1]);
+        assertHoverLabelContent([null, null], 'only on data points');
+
+        function check(content, style, msg) {
+            Lib.clearThrottle();
+            mouseEvent('mousemove', pointPos[0], pointPos[1]);
+
+            assertHoverLabelContent({nums: content}, msg);
+            assertHoverLabelStyle(d3Select('g.hovertext'), style, msg);
+        }
+
+        check([
+            'Component A: 0.5',
+            'B: 0.25',
+            'Component C: 0.25'
+        ].join('\n'), {
+            bgcolor: 'rgb(31, 119, 180)',
+            bordercolor: 'rgb(255, 255, 255)',
+            fontColor: 'rgb(255, 255, 255)',
+            fontSize: 13,
+            fontFamily: 'Arial'
+        }, 'one label per data pt');
+
+        Plotly.restyle(gd, {
+            'hoverlabel.bordercolor': 'blue',
+            'hoverlabel.font.family': [['Gravitas', 'Arial', 'Roboto']]
+        })
+        .then(function() {
+            check([
+                'Component A: 0.5',
+                'B: 0.25',
+                'Component C: 0.25'
+            ].join('\n'), {
+                bgcolor: 'rgb(31, 119, 180)',
+                bordercolor: 'rgb(0, 0, 255)',
+                fontColor: 'rgb(0, 0, 255)',
+                fontSize: 13,
+                fontFamily: 'Gravitas'
+            }, 'after hoverlabel styling restyle call');
+
+            return Plotly.restyle(gd, 'hoverinfo', [['a', 'b+c', 'b']]);
+        })
+        .then(function() {
+            check('Component A: 0.5', {
+                bgcolor: 'rgb(31, 119, 180)',
+                bordercolor: 'rgb(0, 0, 255)',
+                fontColor: 'rgb(0, 0, 255)',
+                fontSize: 13,
+                fontFamily: 'Gravitas'
+            }, 'after hoverlabel styling restyle call');
+        })
+        .then(done, done.fail);
+    });
+
+    it('should respond to hover interactions by', function() {
+        var hoverCnt = 0;
+        var unhoverCnt = 0;
+
+        var hoverData, unhoverData;
+
+        gd.on('plotly_hover', function(eventData) {
+            hoverCnt++;
+            hoverData = eventData.points[0];
+        });
+
+        gd.on('plotly_unhover', function(eventData) {
+            unhoverCnt++;
+            unhoverData = eventData.points[0];
+        });
+
+        mouseEvent('mousemove', blankPos[0], blankPos[1]);
+        expect(hoverData).toBe(undefined, 'not firing on blank points');
+        expect(unhoverData).toBe(undefined, 'not firing on blank points');
+
+        mouseEvent('mousemove', pointPos[0], pointPos[1]);
+        expect(hoverData).not.toBe(undefined, 'firing on data points');
+        expect(Object.keys(hoverData)).toEqual([
+            'data', 'fullData', 'curveNumber', 'pointNumber', 'pointIndex',
+            'xaxis', 'yaxis', 'a', 'b', 'c'
+        ], 'returning the correct event data keys');
+        expect(hoverData.curveNumber).toEqual(0, 'returning the correct curve number');
+        expect(hoverData.pointNumber).toEqual(0, 'returning the correct point number');
+
+        mouseEvent('mouseout', pointPos[0], pointPos[1]);
+        expect(unhoverData).not.toBe(undefined, 'firing on data points');
+        expect(Object.keys(unhoverData)).toEqual([
+            'data', 'fullData', 'curveNumber', 'pointNumber', 'pointIndex',
+            'xaxis', 'yaxis', 'a', 'b', 'c'
+        ], 'returning the correct event data keys');
+        expect(unhoverData.curveNumber).toEqual(0, 'returning the correct curve number');
+        expect(unhoverData.pointNumber).toEqual(0, 'returning the correct point number');
+
+        expect(hoverCnt).toEqual(1);
+        expect(unhoverCnt).toEqual(1);
+    });
+
+    it('should respond to click interactions by', function() {
+        var ptData;
+
+        gd.on('plotly_click', function(eventData) {
+            ptData = eventData.points[0];
+        });
+
+        click(blankPos[0], blankPos[1]);
+        expect(ptData).toBe(undefined, 'not firing on blank points');
+
+        click(pointPos[0], pointPos[1]);
+        expect(ptData).not.toBe(undefined, 'firing on data points');
+        expect(Object.keys(ptData)).toEqual([
+            'data', 'fullData', 'curveNumber', 'pointNumber', 'pointIndex',
+            'xaxis', 'yaxis', 'a', 'b', 'c'
+        ], 'returning the correct event data keys');
+        expect(ptData.curveNumber).toEqual(0, 'returning the correct curve number');
+        expect(ptData.pointNumber).toEqual(0, 'returning the correct point number');
+    });
 });
 
 describe('ternary defaults', function() {
@@ -643,7 +803,7 @@ describe('Test event property of interactions on a ternary plot:', function() {
     beforeAll(function(done) {
         gd = createGraphDiv();
         mockCopy = Lib.extendDeep({}, mock);
-        Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(function() {
+        Plotly.newPlot(gd, mockCopy.data, mockCopy.layout).then(function() {
             pointPos = getClientPosition('path.point');
             destroyGraphDiv();
             done();
@@ -661,18 +821,20 @@ describe('Test event property of interactions on a ternary plot:', function() {
         var futureData;
 
         beforeEach(function(done) {
-            Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(done);
+            Plotly.newPlot(gd, mockCopy.data, mockCopy.layout)
+            .then(function() {
+                futureData = null;
 
-            futureData = undefined;
-
-            gd.on('plotly_click', function(data) {
-                futureData = data;
-            });
+                gd.on('plotly_click', function(data) {
+                    futureData = data;
+                });
+            })
+            .then(done);
         });
 
         it('should not be trigged when not on data points', function() {
             click(blankPos[0], blankPos[1]);
-            expect(futureData).toBe(undefined);
+            expect(futureData).toBe(null);
         });
 
         it('should contain the correct fields', function() {
@@ -705,13 +867,15 @@ describe('Test event property of interactions on a ternary plot:', function() {
         var futureData;
 
         beforeEach(function(done) {
-            Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(done);
+            Plotly.newPlot(gd, mockCopy.data, mockCopy.layout)
+            .then(function() {
+                futureData = null;
 
-            futureData = undefined;
-
-            gd.on('plotly_click', function(data) {
-                futureData = data;
-            });
+                gd.on('plotly_click', function(data) {
+                    futureData = data;
+                });
+            })
+            .then(done);
         });
 
         var modClickOpts = {
@@ -734,12 +898,12 @@ describe('Test event property of interactions on a ternary plot:', function() {
         [modClickOpts, rightClickOpts].forEach(function(clickOpts, i) {
             it('should not be triggered when not on data points', function() {
                 click(blankPos[0], blankPos[1], clickOpts);
-                expect(futureData === undefined).toBe(true, i);
+                expect(futureData).toBe(null, i);
             });
 
             it('should not be triggered when not canceling context', function() {
                 click(pointPos[0], pointPos[1], Lib.extendFlat({}, clickOpts, {cancelContext: false}));
-                expect(futureData === undefined).toBe(true, i);
+                expect(futureData).toBe(null, i);
             });
 
             it('should contain the correct fields', function() {
@@ -778,11 +942,15 @@ describe('Test event property of interactions on a ternary plot:', function() {
         var futureData;
 
         beforeEach(function(done) {
-            Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(done);
+            Plotly.newPlot(gd, mockCopy.data, mockCopy.layout)
+            .then(function() {
+                futureData = null;
 
-            gd.on('plotly_hover', function(data) {
-                futureData = data;
-            });
+                gd.on('plotly_hover', function(data) {
+                    futureData = data;
+                });
+            })
+            .then(done);
         });
 
         it('should contain the correct fields', function() {
@@ -825,11 +993,15 @@ describe('Test event property of interactions on a ternary plot:', function() {
         var futureData;
 
         beforeEach(function(done) {
-            Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(done);
+            Plotly.newPlot(gd, mockCopy.data, mockCopy.layout)
+            .then(function() {
+                futureData = null;
 
-            gd.on('plotly_unhover', function(data) {
-                futureData = data;
-            });
+                gd.on('plotly_unhover', function(data) {
+                    futureData = data;
+                });
+            })
+            .then(done);
         });
 
         it('should contain the correct fields', function() {

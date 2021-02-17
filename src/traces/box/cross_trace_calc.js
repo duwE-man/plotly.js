@@ -1,16 +1,8 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
 var Axes = require('../../plots/cartesian/axes');
 var Lib = require('../../lib');
-var getAxisGroup = require('../../plots/cartesian/axis_ids').getAxisGroup;
+var getAxisGroup = require('../../plots/cartesian/constraints').getAxisGroup;
 
 var orientations = ['v', 'h'];
 
@@ -68,7 +60,10 @@ function setPositionOffset(traceType, gd, boxList, posAxis) {
     if(!pointList.length) return;
 
     // box plots - update dPos based on multiple traces
-    var boxdv = Lib.distinctVals(pointList);
+    var boxdv = Lib.distinctVals(pointList, {
+        unitMinDiff: posAxis.type === 'category' || posAxis.type === 'multicategory'
+    });
+
     var dPos0 = boxdv.minDiff / 2;
 
     // check for forced minimum dtick

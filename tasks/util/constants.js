@@ -5,6 +5,8 @@ var pathToRoot = path.join(__dirname, '../../');
 var pathToSrc = path.join(pathToRoot, 'src/');
 var pathToLib = path.join(pathToRoot, 'lib/');
 var pathToImageTest = path.join(pathToRoot, 'test/image');
+var pathToStrictD3Module = path.join(pathToRoot, 'test/strict-d3.js');
+var pathToVendor = path.join(pathToRoot, 'vendor/');
 var pathToDist = path.join(pathToRoot, 'dist/');
 var pathToBuild = path.join(pathToRoot, 'build/');
 
@@ -24,7 +26,7 @@ try {
 }
 
 var partialBundleNames = [
-    'basic', 'cartesian', 'geo', 'gl3d', 'gl2d', 'mapbox', 'finance'
+    'basic', 'cartesian', 'geo', 'gl3d', 'gl2d', 'mapbox', 'finance', 'strict'
 ];
 
 var partialBundlePaths = partialBundleNames.map(function(name) {
@@ -43,12 +45,14 @@ module.exports = {
     pathToSrc: pathToSrc,
     pathToLib: pathToLib,
     pathToBuild: pathToBuild,
+    pathToVendor: pathToVendor,
     pathToDist: pathToDist,
 
     pathToPlotlyIndex: path.join(pathToLib, 'index.js'),
     pathToPlotlyCore: path.join(pathToSrc, 'core.js'),
     pathToPlotlyVersion: path.join(pathToSrc, 'version.js'),
     pathToPlotlyBuild: path.join(pathToBuild, 'plotly.js'),
+    pathToPlotlyBuildMin: path.join(pathToBuild, 'plotly.min.js'),
     pathToPlotlyDist: path.join(pathToDist, 'plotly.js'),
     pathToPlotlyDistMin: path.join(pathToDist, 'plotly.min.js'),
     pathToPlotlyDistWithMeta: path.join(pathToDist, 'plotly-with-meta.js'),
@@ -77,10 +81,10 @@ module.exports = {
     pathToTestImagesDiff: path.join(pathToBuild, 'test_images_diff/'),
     pathToTestImagesDiffList: path.join(pathToBuild, 'list_of_incorrect_images.txt'),
 
+    pathToStrictD3Module: pathToStrictD3Module,
+
     pathToJasmineTests: path.join(pathToRoot, 'test/jasmine/tests'),
     pathToJasmineBundleTests: path.join(pathToRoot, 'test/jasmine/bundle_tests'),
-    pathToRequireJS: path.join(pathToRoot, 'node_modules', 'requirejs', 'require.js'),
-    pathToRequireJSFixture: path.join(pathToBuild, 'requirejs_fixture.js'),
 
     // this mapbox access token is 'public', no need to hide it
     // more info: https://www.mapbox.com/help/define-access-token/
@@ -96,15 +100,6 @@ module.exports = {
     uglifyOptions: {
         ecma: 5,
         mangle: true,
-        compress: {
-            // see full list of compress option
-            // https://github.com/fabiosantoscode/terser#compress-options
-            //
-            // need to turn off 'typeofs' to make mapbox-gl work in
-            // minified bundles, for more info see:
-            // https://github.com/plotly/plotly.js/issues/2787
-            typeofs: false
-        },
         output: {
             beautify: false,
             ascii_only: true
@@ -121,14 +116,4 @@ module.exports = {
         '* Licensed under the MIT license',
         '*/'
     ].join('\n'),
-
-    licenseSrc: [
-        '/**',
-        '* Copyright 2012-' + year + ', Plotly, Inc.',
-        '* All rights reserved.',
-        '*',
-        '* This source code is licensed under the MIT license found in the',
-        '* LICENSE file in the root directory of this source tree.',
-        '*/'
-    ].join('\n')
 };

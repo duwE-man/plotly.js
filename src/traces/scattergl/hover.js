@@ -1,11 +1,3 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
 var Registry = require('../../registry');
@@ -161,16 +153,19 @@ function calcHover(pointData, x, y, trace) {
     var fakeCd = {};
     fakeCd[pointData.index] = di;
 
+    var origX = trace._origX;
+    var origY = trace._origY;
+
     var pointData2 = Lib.extendFlat({}, pointData, {
         color: getTraceColor(trace, di),
 
         x0: xp - rad,
         x1: xp + rad,
-        xLabelVal: di.x,
+        xLabelVal: origX ? origX[id] : di.x,
 
         y0: yp - rad,
         y1: yp + rad,
-        yLabelVal: di.y,
+        yLabelVal: origY ? origY[id] : di.y,
 
         cd: fakeCd,
         distance: minDist,

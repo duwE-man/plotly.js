@@ -1,14 +1,6 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
-var mapboxgl = require('mapbox-gl');
+var mapboxgl = require('mapbox-gl/dist/mapbox-gl-unminified');
 
 var Lib = require('../../lib');
 var geoUtils = require('../../lib/geo_location_utils');
@@ -450,15 +442,15 @@ proto.initFx = function(calcData, fullLayout) {
 
     map.on('mousemove', function(evt) {
         var bb = self.div.getBoundingClientRect();
-
-        // some hackery to get Fx.hover to work
-        evt.clientX = evt.point.x + bb.left;
-        evt.clientY = evt.point.y + bb.top;
+        var xy = [
+            evt.originalEvent.offsetX,
+            evt.originalEvent.offsetY
+        ];
 
         evt.target.getBoundingClientRect = function() { return bb; };
 
-        self.xaxis.p2c = function() { return evt.lngLat.lng; };
-        self.yaxis.p2c = function() { return evt.lngLat.lat; };
+        self.xaxis.p2c = function() { return map.unproject(xy).lng; };
+        self.yaxis.p2c = function() { return map.unproject(xy).lat; };
 
         gd._fullLayout._rehover = function() {
             if(gd._fullLayout._hoversubplot === self.id && gd._fullLayout[self.id]) {

@@ -1,14 +1,6 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
-var d3 = require('d3');
+var d3 = require('@plotly/d3');
 var d3Hierarchy = require('d3-hierarchy');
 
 var Drawing = require('../../components/drawing');
@@ -18,6 +10,7 @@ var uniformText = require('../bar/uniform_text');
 var recordMinTextSize = uniformText.recordMinTextSize;
 var clearMinTextSize = uniformText.clearMinTextSize;
 var piePlot = require('../pie/plot');
+var getRotationAngle = require('../pie/helpers').getRotationAngle;
 var computeTransform = piePlot.computeTransform;
 var transformInsideText = piePlot.transformInsideText;
 var styleOne = require('./style').styleOne;
@@ -149,6 +142,14 @@ function plotOne(gd, cd, element, transitionOpts) {
 
     // filter out slices that won't show up on graph
     sliceData = sliceData.filter(function(pt) { return pt.y1 <= cutoff; });
+
+    var baseX = getRotationAngle(trace.rotation);
+    if(baseX) {
+        sliceData.forEach(function(pt) {
+            pt.x0 += baseX;
+            pt.x1 += baseX;
+        });
+    }
 
     // partition span ('y') to sector radial px value
     var maxY = Math.min(maxHeight, maxDepth);
@@ -302,7 +303,7 @@ function plotOne(gd, cd, element, transitionOpts) {
         var next;
 
         if(entryPrev) {
-            var a = pt.x1 > entryPrev.x1 ? 2 * Math.PI : 0;
+            var a = (pt.x1 > entryPrev.x1 ? 2 * Math.PI : 0) + baseX;
             // if pt to remove:
             // - if 'below' where the root-node used to be: shrink it radially inward
             // - otherwise, collapse it clockwise or counterclockwise which ever is shortest to theta=0
@@ -352,7 +353,7 @@ function plotOne(gd, cd, element, transitionOpts) {
                         // if new branch, twist it in clockwise or
                         // counterclockwise which ever is shorter to
                         // its final angle
-                        var a = pt.x1 > nextX1ofPrevEntry ? 2 * Math.PI : 0;
+                        var a = (pt.x1 > nextX1ofPrevEntry ? 2 * Math.PI : 0) + baseX;
                         prev = {x0: a, x1: a};
                     } else {
                         // if new leaf (when maxdepth is set),
@@ -367,7 +368,7 @@ function plotOne(gd, cd, element, transitionOpts) {
                 }
             } else {
                 // start sector of new traces from theta=0
-                prev = {x0: 0, x1: 0};
+                prev = {x0: baseX, x1: baseX};
             }
         }
 
@@ -410,11 +411,11 @@ function plotOne(gd, cd, element, transitionOpts) {
                     }
                 } else {
                     // if new root-node
-                    prev.x0 = prev.x1 = 0;
+                    prev.x0 = prev.x1 = baseX;
                 }
             } else {
                 // on new traces
-                prev.x0 = prev.x1 = 0;
+                prev.x0 = prev.x1 = baseX;
             }
         }
 

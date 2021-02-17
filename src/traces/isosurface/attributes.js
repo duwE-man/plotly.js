@@ -1,11 +1,3 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
 var colorScaleAttrs = require('../../components/colorscale/attributes');
@@ -20,7 +12,6 @@ function makeSliceAttr(axLetter) {
     return {
         show: {
             valType: 'boolean',
-            role: 'info',
             dflt: false,
             description: [
                 'Determines whether or not slice planes about the', axLetter,
@@ -30,7 +21,6 @@ function makeSliceAttr(axLetter) {
         locations: {
             valType: 'data_array',
             dflt: [],
-            role: 'info',
             description: [
                 'Specifies the location(s) of slices on the axis.',
                 'When not specified slices would be created for',
@@ -39,7 +29,6 @@ function makeSliceAttr(axLetter) {
         },
         fill: {
             valType: 'number',
-            role: 'style',
             min: 0,
             max: 1,
             dflt: 1,
@@ -57,7 +46,6 @@ function makeCapAttr(axLetter) {
     return {
         show: {
             valType: 'boolean',
-            role: 'info',
             dflt: true,
             description: [
                 'Sets the fill ratio of the `slices`. The default fill value of the', axLetter,
@@ -68,7 +56,6 @@ function makeCapAttr(axLetter) {
         },
         fill: {
             valType: 'number',
-            role: 'style',
             min: 0,
             max: 1,
             dflt: 1,
@@ -85,42 +72,36 @@ function makeCapAttr(axLetter) {
 var attrs = module.exports = overrideAll(extendFlat({
     x: {
         valType: 'data_array',
-        role: 'info',
         description: [
             'Sets the X coordinates of the vertices on X axis.'
         ].join(' ')
     },
     y: {
         valType: 'data_array',
-        role: 'info',
         description: [
             'Sets the Y coordinates of the vertices on Y axis.'
         ].join(' ')
     },
     z: {
         valType: 'data_array',
-        role: 'info',
         description: [
             'Sets the Z coordinates of the vertices on Z axis.'
         ].join(' ')
     },
     value: {
         valType: 'data_array',
-        role: 'info',
         description: [
             'Sets the 4th dimension (value) of the vertices.'
         ].join(' ')
     },
     isomin: {
         valType: 'number',
-        role: 'info',
         description: [
             'Sets the minimum boundary for iso-surface plot.'
         ].join(' ')
     },
     isomax: {
         valType: 'number',
-        role: 'info',
         description: [
             'Sets the maximum boundary for iso-surface plot.'
         ].join(' ')
@@ -129,7 +110,6 @@ var attrs = module.exports = overrideAll(extendFlat({
     surface: {
         show: {
             valType: 'boolean',
-            role: 'info',
             dflt: true,
             description: [
                 'Hides/displays surfaces between minimum and maximum iso-values.'
@@ -137,7 +117,6 @@ var attrs = module.exports = overrideAll(extendFlat({
         },
         count: {
             valType: 'integer',
-            role: 'info',
             dflt: 2,
             min: 1,
             description: [
@@ -148,7 +127,6 @@ var attrs = module.exports = overrideAll(extendFlat({
         },
         fill: {
             valType: 'number',
-            role: 'style',
             min: 0,
             max: 1,
             dflt: 1,
@@ -164,7 +142,6 @@ var attrs = module.exports = overrideAll(extendFlat({
             flags: ['A', 'B', 'C', 'D', 'E'],
             extras: ['all', 'odd', 'even'],
             dflt: 'all',
-            role: 'style',
             description: [
                 'Sets the surface pattern of the iso-surface 3-D sections. The default pattern of',
                 'the surface is `all` meaning that the rest of surface elements would be shaded.',
@@ -179,7 +156,6 @@ var attrs = module.exports = overrideAll(extendFlat({
     spaceframe: {
         show: {
             valType: 'boolean',
-            role: 'info',
             dflt: false,
             description: [
                 'Displays/hides tetrahedron shapes between minimum and',
@@ -189,7 +165,6 @@ var attrs = module.exports = overrideAll(extendFlat({
         },
         fill: {
             valType: 'number',
-            role: 'style',
             min: 0,
             max: 1,
             dflt: 0.15,
@@ -216,7 +191,6 @@ var attrs = module.exports = overrideAll(extendFlat({
 
     text: {
         valType: 'string',
-        role: 'info',
         dflt: '',
         arrayOk: true,
         description: [
@@ -227,7 +201,6 @@ var attrs = module.exports = overrideAll(extendFlat({
     },
     hovertext: {
         valType: 'string',
-        role: 'info',
         dflt: '',
         arrayOk: true,
         description: 'Same as `text`.'

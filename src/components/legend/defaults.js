@@ -1,11 +1,3 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
 var Registry = require('../../registry');
@@ -99,7 +91,7 @@ module.exports = function legendDefaults(layoutIn, layoutOut, fullData) {
         } else {
             // maybe use y=1.1 / yanchor=bottom as above
             //   to avoid https://github.com/plotly/plotly.js/issues/1199
-            //   in v2
+            //   in v3
             defaultY = -0.1;
             defaultYAnchor = 'top';
         }
@@ -113,6 +105,7 @@ module.exports = function legendDefaults(layoutIn, layoutOut, fullData) {
     if(helpers.isGrouped(layoutOut.legend)) coerce('tracegroupgap');
 
     coerce('itemsizing');
+    coerce('itemwidth');
 
     coerce('itemclick');
     coerce('itemdoubleclick');

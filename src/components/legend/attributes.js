@@ -1,11 +1,3 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
 var fontAttrs = require('../../plots/font_attributes');
@@ -15,7 +7,6 @@ var colorAttrs = require('../color/attributes');
 module.exports = {
     bgcolor: {
         valType: 'color',
-        role: 'style',
         editType: 'legend',
         description: [
             'Sets the legend background color.',
@@ -25,7 +16,6 @@ module.exports = {
     bordercolor: {
         valType: 'color',
         dflt: colorAttrs.defaultLine,
-        role: 'style',
         editType: 'legend',
         description: 'Sets the color of the border enclosing the legend.'
     },
@@ -33,7 +23,6 @@ module.exports = {
         valType: 'number',
         min: 0,
         dflt: 0,
-        role: 'style',
         editType: 'legend',
         description: 'Sets the width (in px) of the border enclosing the legend.'
     },
@@ -45,7 +34,6 @@ module.exports = {
         valType: 'enumerated',
         values: ['v', 'h'],
         dflt: 'v',
-        role: 'info',
         editType: 'legend',
         description: 'Sets the orientation of the legend.'
     },
@@ -53,7 +41,6 @@ module.exports = {
         valType: 'flaglist',
         flags: ['reversed', 'grouped'],
         extras: ['normal'],
-        role: 'style',
         editType: 'legend',
         description: [
             'Determines the order at which the legend items are displayed.',
@@ -75,7 +62,6 @@ module.exports = {
         valType: 'number',
         min: 0,
         dflt: 10,
-        role: 'style',
         editType: 'legend',
         description: [
             'Sets the amount of vertical space (in px) between legend groups.'
@@ -85,19 +71,24 @@ module.exports = {
         valType: 'enumerated',
         values: ['trace', 'constant'],
         dflt: 'trace',
-        role: 'style',
         editType: 'legend',
         description: [
             'Determines if the legend items symbols scale with their corresponding *trace* attributes',
             'or remain *constant* independent of the symbol size on the graph.'
         ].join(' ')
     },
+    itemwidth: {
+        valType: 'number',
+        min: 30,
+        dflt: 30,
+        editType: 'legend',
+        description: 'Sets the width (in px) of the legend item symbols (the part other than the title.text).',
+    },
 
     itemclick: {
         valType: 'enumerated',
         values: ['toggle', 'toggleothers', false],
         dflt: 'toggle',
-        role: 'info',
         editType: 'legend',
         description: [
             'Determines the behavior on legend item click.',
@@ -110,7 +101,6 @@ module.exports = {
         valType: 'enumerated',
         values: ['toggle', 'toggleothers', false],
         dflt: 'toggleothers',
-        role: 'info',
         editType: 'legend',
         description: [
             'Determines the behavior on legend item double-click.',
@@ -124,7 +114,6 @@ module.exports = {
         valType: 'number',
         min: -2,
         max: 3,
-        role: 'style',
         editType: 'legend',
         description: [
             'Sets the x position (in normalized coordinates) of the legend.',
@@ -136,7 +125,6 @@ module.exports = {
         valType: 'enumerated',
         values: ['auto', 'left', 'center', 'right'],
         dflt: 'left',
-        role: 'info',
         editType: 'legend',
         description: [
             'Sets the legend\'s horizontal position anchor.',
@@ -151,7 +139,6 @@ module.exports = {
         valType: 'number',
         min: -2,
         max: 3,
-        role: 'style',
         editType: 'legend',
         description: [
             'Sets the y position (in normalized coordinates) of the legend.',
@@ -163,7 +150,6 @@ module.exports = {
     yanchor: {
         valType: 'enumerated',
         values: ['auto', 'top', 'middle', 'bottom'],
-        role: 'info',
         editType: 'legend',
         description: [
             'Sets the legend\'s vertical position anchor',
@@ -176,7 +162,6 @@ module.exports = {
     },
     uirevision: {
         valType: 'any',
-        role: 'info',
         editType: 'none',
         description: [
             'Controls persistence of legend-driven changes in trace and pie label',
@@ -187,7 +172,6 @@ module.exports = {
         valType: 'enumerated',
         values: ['top', 'middle', 'bottom'],
         dflt: 'middle',
-        role: 'style',
         editType: 'legend',
         description: [
             'Sets the vertical alignment of the symbols with respect to their associated text.',
@@ -197,7 +181,6 @@ module.exports = {
         text: {
             valType: 'string',
             dflt: '',
-            role: 'info',
             editType: 'legend',
             description: [
                 'Sets the title of the legend.'
@@ -212,7 +195,6 @@ module.exports = {
         side: {
             valType: 'enumerated',
             values: ['top', 'left', 'top left'],
-            role: 'style',
             editType: 'legend',
             description: [
                 'Determines the location of legend\'s title',

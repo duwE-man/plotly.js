@@ -1,11 +1,3 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
 var Axes = require('../../plots/cartesian/axes');
@@ -88,7 +80,7 @@ function getClosestPoint(pointData, xval, yval, hovermode) {
     pointData.x0 = xa.c2p(di.pos + centerShift - displayHalfWidth, true);
     pointData.x1 = xa.c2p(di.pos + centerShift + displayHalfWidth, true);
 
-    pointData.xLabelVal = di.pos;
+    pointData.xLabelVal = di.orig_p !== undefined ? di.orig_p : di.pos;
 
     pointData.spikeDistance = dxy(di) * spikePseudoDistance / hoverPseudoDistance;
     pointData.xSpike = xa.c2p(di.pos, true);

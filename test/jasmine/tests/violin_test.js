@@ -4,10 +4,11 @@ var Plots = require('@src/plots/plots');
 
 var Violin = require('@src/traces/violin');
 
-var d3 = require('d3');
+var d3Select = require('../../strict-d3').select;
+var d3SelectAll = require('../../strict-d3').selectAll;
 var createGraphDiv = require('../assets/create_graph_div');
 var destroyGraphDiv = require('../assets/destroy_graph_div');
-var failTest = require('../assets/fail_test');
+
 var mouseEvent = require('../assets/mouse_event');
 var supplyAllDefaults = require('../assets/supply_defaults');
 
@@ -344,12 +345,12 @@ describe('Test violin hover:', function() {
 
         var pos = specs.pos || [200, 200];
 
-        return Plotly.plot(gd, fig).then(function() {
+        return Plotly.newPlot(gd, fig).then(function() {
             mouseEvent('mousemove', pos[0], pos[1]);
             assertHoverLabelContent(specs);
 
             if(specs.hoverLabelPos) {
-                d3.selectAll('g.hovertext').each(function(_, i) {
+                d3SelectAll('g.hovertext').each(function(_, i) {
                     var bbox = this.getBoundingClientRect();
                     expect([bbox.bottom, bbox.top])
                         .toBeWithinArray(specs.hoverLabelPos[i], 10, 'bottom--top hover label ' + i);
@@ -666,7 +667,7 @@ describe('Test violin hover:', function() {
     }]
     .forEach(function(specs) {
         it('should generate correct hover labels ' + specs.desc, function(done) {
-            run(specs).catch(failTest).then(done);
+            run(specs).then(done, done.fail);
         });
     });
 
@@ -683,7 +684,7 @@ describe('Test violin hover:', function() {
         });
 
         function assertViolinHoverLine(pos) {
-            var line = d3.select('.hoverlayer').selectAll('line');
+            var line = d3Select('.hoverlayer').selectAll('line');
 
             expect(line.size()).toBe(1, 'only one violin line at a time');
             expect(line.attr('class').indexOf('violinline')).toBe(0, 'correct class name');
@@ -694,34 +695,31 @@ describe('Test violin hover:', function() {
         }
 
         it('should show in two-sided base case', function(done) {
-            Plotly.plot(gd, fig).then(function() {
+            Plotly.newPlot(gd, fig).then(function() {
                 mouseEvent('mousemove', 250, 250);
                 assertViolinHoverLine([299.35, 250, 200.65, 250]);
             })
-            .catch(failTest)
-            .then(done);
+            .then(done, done.fail);
         });
 
         it('should show in one-sided positive case', function(done) {
             fig.data[0].side = 'positive';
 
-            Plotly.plot(gd, fig).then(function() {
+            Plotly.newPlot(gd, fig).then(function() {
                 mouseEvent('mousemove', 300, 250);
                 assertViolinHoverLine([277.3609, 250, 80, 250]);
             })
-            .catch(failTest)
-            .then(done);
+            .then(done, done.fail);
         });
 
         it('should show in one-sided negative case', function(done) {
             fig.data[0].side = 'negative';
 
-            Plotly.plot(gd, fig).then(function() {
+            Plotly.newPlot(gd, fig).then(function() {
                 mouseEvent('mousemove', 200, 250);
                 assertViolinHoverLine([222.6391, 250, 420, 250]);
             })
-            .catch(failTest)
-            .then(done);
+            .then(done, done.fail);
         });
     });
 
@@ -732,14 +730,14 @@ describe('Test violin hover:', function() {
         fig.layout.width = 700;
         fig.layout.height = 450;
 
-        Plotly.plot(gd, fig)
+        Plotly.newPlot(gd, fig)
         .then(function() {
             mouseEvent('mousemove', 350, 225);
 
             var actual = [];
-            d3.selectAll('g.hovertext').each(function() {
+            d3SelectAll('g.hovertext').each(function() {
                 var bbox = this.getBoundingClientRect();
-                var tx = d3.select(this).text();
+                var tx = d3Select(this).text();
                 actual.push([tx, bbox]);
             });
 
@@ -755,8 +753,7 @@ describe('Test violin hover:', function() {
                 }
             }
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 });
 
@@ -781,7 +778,7 @@ describe('Test violin restyle:', function() {
         }
 
         function _assert(msg, exp) {
-            var trace3 = d3.select(gd).select('.violinlayer > .trace');
+            var trace3 = d3Select(gd).select('.violinlayer > .trace');
             _assertOne(msg, exp, trace3, 'violinCnt', 'path.violin');
             _assertOne(msg, exp, trace3, 'boxCnt', 'path.box');
             _assertOne(msg, exp, trace3, 'meanlineInBoxCnt', 'path.mean');
@@ -789,7 +786,7 @@ describe('Test violin restyle:', function() {
             _assertOne(msg, exp, trace3, 'ptsCnt', 'path.point');
         }
 
-        Plotly.plot(gd, fig)
+        Plotly.newPlot(gd, fig)
         .then(function() {
             _assert('base', {violinCnt: 1});
         })
@@ -813,7 +810,6 @@ describe('Test violin restyle:', function() {
         .then(function() {
             _assert('with pts', {violinCnt: 1, ptsCnt: 272});
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 });

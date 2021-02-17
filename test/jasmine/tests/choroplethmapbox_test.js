@@ -516,7 +516,7 @@ describe('Test choroplethmapbox convert:', function() {
     });
 });
 
-describe('@noCI Test choroplethmapbox hover:', function() {
+describe('Test choroplethmapbox hover:', function() {
     var gd;
 
     afterEach(function(done) {
@@ -525,8 +525,20 @@ describe('@noCI Test choroplethmapbox hover:', function() {
         setTimeout(done, 200);
     });
 
-    function run(s, done) {
+    function transformPlot(gd, transformString) {
+        gd.style.webkitTransform = transformString;
+        gd.style.MozTransform = transformString;
+        gd.style.msTransform = transformString;
+        gd.style.OTransform = transformString;
+        gd.style.transform = transformString;
+    }
+
+    function run(hasCssTransform, s, done) {
         gd = createGraphDiv();
+        var scale = 1;
+        if(hasCssTransform) {
+            scale = 0.5;
+        }
 
         var fig = Lib.extendDeep({},
             s.mock || require('@mocks/mapbox_choropleth0.json')
@@ -542,7 +554,9 @@ describe('@noCI Test choroplethmapbox hover:', function() {
 
         var pos = s.pos || [270, 220];
 
-        return Plotly.plot(gd, fig).then(function() {
+        return Plotly.newPlot(gd, fig).then(function() {
+            if(hasCssTransform) transformPlot(gd, 'translate(-25%, -25%) scale(0.5)');
+
             var to = setTimeout(function() {
                 failTest('no event data received');
                 done();
@@ -569,7 +583,7 @@ describe('@noCI Test choroplethmapbox hover:', function() {
                 setTimeout(done, 0);
             });
 
-            mouseEvent('mousemove', pos[0], pos[1]);
+            mouseEvent('mousemove', scale * pos[0], scale * pos[1]);
         })
         .catch(failTest);
     }
@@ -631,13 +645,15 @@ describe('@noCI Test choroplethmapbox hover:', function() {
     }];
 
     specs.forEach(function(s) {
-        it('@gl should generate correct hover labels ' + s.desc, function(done) {
-            run(s, done);
+        [false, true].forEach(function(hasCssTransform) {
+            it('@gl should generate correct hover labels ' + s.desc + ', hasCssTransform: ' + hasCssTransform, function(done) {
+                run(hasCssTransform, s, done);
+            });
         });
     });
 });
 
-describe('@noCI Test choroplethmapbox interactions:', function() {
+describe('Test choroplethmapbox interactions:', function() {
     var gd;
 
     var geojson = {
@@ -692,7 +708,7 @@ describe('@noCI Test choroplethmapbox interactions:', function() {
             marker: {opacity: 0.3}
         };
 
-        Plotly.plot(gd,
+        Plotly.newPlot(gd,
             [trace0, trace1],
             {mapbox: {style: 'basic'}},
             {mapboxAccessToken: MAPBOX_ACCESS_TOKEN}
@@ -708,8 +724,7 @@ describe('@noCI Test choroplethmapbox interactions:', function() {
         .then(function() {
             _assert('after adding trace0', { layerCnt: 24 });
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 
     it('@gl should be able to restyle *below*', function(done) {
@@ -720,7 +735,7 @@ describe('@noCI Test choroplethmapbox interactions:', function() {
             return layerIds;
         }
 
-        Plotly.plot(gd, [{
+        Plotly.newPlot(gd, [{
             type: 'choroplethmapbox',
             locations: ['AL'],
             z: [10],
@@ -774,7 +789,6 @@ describe('@noCI Test choroplethmapbox interactions:', function() {
                 'place_label_other', 'place_label_city', 'country_label'
             ]);
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     }, 5 * jasmine.DEFAULT_TIMEOUT_INTERVAL);
 });

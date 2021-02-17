@@ -48,9 +48,6 @@ if(argv.info) {
         'Run all tests with the `noCI` tag on Firefox in a 1500px wide window:',
         '  $ npm run test-jasmine -- --tags=noCI --FF --width=1500',
         '',
-        'Run the `ie9_test.js` bundle test with the verbose reporter:',
-        '  $ npm run test-jasmine -- --bundleTest=ie9 --verbose',
-        '',
         'Arguments:',
         '  - All non-flagged arguments corresponds to the test suites in `test/jasmine/tests/` to be run.',
         '    No need to add the `_test.js` suffix, we expand them correctly here.',
@@ -122,10 +119,10 @@ if(isFullSuite) {
 var pathToShortcutPath = path.join(__dirname, '..', '..', 'tasks', 'util', 'shortcut_paths.js');
 var pathToStrictD3 = path.join(__dirname, '..', '..', 'tasks', 'util', 'strict_d3.js');
 var pathToJQuery = path.join(__dirname, 'assets', 'jquery-1.8.3.min.js');
-var pathToIE9mock = path.join(__dirname, 'assets', 'ie9_mock.js');
 var pathToCustomMatchers = path.join(__dirname, 'assets', 'custom_matchers.js');
 var pathToUnpolyfill = path.join(__dirname, 'assets', 'unpolyfill.js');
-var pathToMathJax = path.join(constants.pathToDist, 'extras', 'mathjax');
+var pathToSaneTopojsonDist = path.join(__dirname, '..', '..', 'node_modules', 'sane-topojson', 'dist');
+var pathToMathJax = path.join(constants.pathToVendor, 'extras', 'mathjax');
 
 var reporters = [];
 if(argv['report-progress'] || argv['report-spec'] || argv['report-dots']) {
@@ -183,11 +180,11 @@ func.defaultConfig = {
     files: [
         pathToCustomMatchers,
         pathToUnpolyfill,
-        // available to fetch from /base/path/to/mathjax
+        // available to fetch from /base/vendor/extras/mathjax/
         // more info: http://karma-runner.github.io/3.0/config/files.html
         {pattern: pathToMathJax + '/**', included: false, watched: false, served: true},
-        // available to fetch local topojson files
-        {pattern: constants.pathToTopojsonDist + '/**', included: false, watched: false, served: true}
+        // available to fetch from /base/node_modules/sane-topojson/dist/
+        {pattern: pathToSaneTopojsonDist + '/**', included: false, watched: false, served: true}
     ],
 
     // list of files / pattern to exclude
@@ -246,7 +243,13 @@ func.defaultConfig = {
         },
         _Firefox: {
             base: 'Firefox',
-            flags: ['--width=' + argv.width, '--height=' + argv.height]
+            flags: ['--width=' + argv.width, '--height=' + argv.height],
+            prefs: {
+                'devtools.toolbox.zoomValue': '1.5',
+                'devtools.toolbox.host': 'window',
+                'devtools.toolbox.previousHost': 'bottom',
+                'devtools.command-button-rulers.enabled': true
+            }
         }
     },
 
@@ -304,24 +307,8 @@ func.defaultConfig.preprocessors[pathToCustomMatchers] = ['browserify'];
 
 if(isBundleTest) {
     switch(basename(testFileGlob)) {
-        case 'requirejs':
-            // browserified custom_matchers doesn't work with this route
-            // so clear them out of the files and preprocessors
-            func.defaultConfig.files = [
-                constants.pathToRequireJS,
-                constants.pathToRequireJSFixture
-            ];
-            delete func.defaultConfig.preprocessors[pathToCustomMatchers];
-            break;
         case 'minified_bundle':
-            func.defaultConfig.files.push(constants.pathToPlotlyDistMin);
-            func.defaultConfig.preprocessors[testFileGlob] = ['browserify'];
-            break;
-        case 'ie9':
-            // load ie9_mock.js before plotly.js+test bundle
-            // to catch reference errors that could occur
-            // when plotly.js is first loaded.
-            func.defaultConfig.files.push(pathToIE9mock);
+            func.defaultConfig.files.push(constants.pathToPlotlyBuildMin);
             func.defaultConfig.preprocessors[testFileGlob] = ['browserify'];
             break;
         case 'plotschema':

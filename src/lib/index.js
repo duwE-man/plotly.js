@@ -1,14 +1,7 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
-var d3 = require('d3');
+var d3 = require('@plotly/d3');
+var utcFormat = require('d3-time-format').utcFormat;
 var isNumeric = require('fast-isnumeric');
 
 var numConstants = require('../constants/numerical');
@@ -87,8 +80,11 @@ lib.dot = matrixModule.dot;
 lib.translationMatrix = matrixModule.translationMatrix;
 lib.rotationMatrix = matrixModule.rotationMatrix;
 lib.rotationXYMatrix = matrixModule.rotationXYMatrix;
+lib.apply3DTransform = matrixModule.apply3DTransform;
 lib.apply2DTransform = matrixModule.apply2DTransform;
 lib.apply2DTransform2 = matrixModule.apply2DTransform2;
+lib.convertCssMatrix = matrixModule.convertCssMatrix;
+lib.inverseTransformMatrix = matrixModule.inverseTransformMatrix;
 
 var anglesModule = require('./angles');
 lib.deg2rad = anglesModule.deg2rad;
@@ -144,8 +140,13 @@ lib.removeElement = domModule.removeElement;
 lib.addStyleRule = domModule.addStyleRule;
 lib.addRelatedStyleRule = domModule.addRelatedStyleRule;
 lib.deleteRelatedStyleRule = domModule.deleteRelatedStyleRule;
+lib.getFullTransformMatrix = domModule.getFullTransformMatrix;
+lib.getElementTransformMatrix = domModule.getElementTransformMatrix;
+lib.getElementAndAncestors = domModule.getElementAndAncestors;
+lib.equalDomRects = domModule.equalDomRects;
 
 lib.clearResponsive = require('./clear_responsive');
+lib.preserveDrawingBuffer = require('./preserve_drawing_buffer');
 
 lib.makeTraceGroups = require('./make_trace_groups');
 
@@ -156,6 +157,8 @@ lib.notifier = require('./notifier');
 lib.filterUnique = require('./filter_unique');
 lib.filterVisible = require('./filter_visible');
 lib.pushUnique = require('./push_unique');
+
+lib.increment = require('./increment');
 
 lib.cleanNumber = require('./clean_number');
 
@@ -701,22 +704,18 @@ lib.isIE = function() {
     return typeof window.navigator.msSaveBlob !== 'undefined';
 };
 
-var IS_IE9_OR_BELOW_REGEX = /MSIE [1-9]\./;
-lib.isIE9orBelow = function() {
-    return lib.isIE() && IS_IE9_OR_BELOW_REGEX.test(window.navigator.userAgent);
-};
-
 var IS_SAFARI_REGEX = /Version\/[\d\.]+.*Safari/;
 lib.isSafari = function() {
     return IS_SAFARI_REGEX.test(window.navigator.userAgent);
 };
 
-/**
- * Duck typing to recognize a d3 selection, mostly for IE9's benefit
- * because it doesn't handle instanceof like modern browsers
- */
+var IS_IOS_REGEX = /iPad|iPhone|iPod/;
+lib.isIOS = function() {
+    return IS_IOS_REGEX.test(window.navigator.userAgent);
+};
+
 lib.isD3Selection = function(obj) {
-    return obj && (typeof obj.classed === 'function');
+    return obj instanceof d3.selection;
 };
 
 /**
@@ -849,7 +848,7 @@ lib.objectFromPath = function(path, value) {
  *   lib.expandObjectPaths({'foo[1].bar': 10, 'foo[0].bar': 20});
  *     => { foo: [{bar: 10}, {bar: 20}] }
  *
- * It does NOT, however, merge mulitple mutliply-nested arrays::
+ * It does NOT, however, merge multiple multiply-nested arrays::
  *
  *   lib.expandObjectPaths({'marker[1].range[1]': 5, 'marker[1].range[0]': 4})
  *     => { marker: [null, {range: 4}] }
@@ -1082,7 +1081,7 @@ function templateFormatString(string, labels, d3locale) {
             }
 
             if(format[0] === '|') {
-                fmt = d3locale ? d3locale.timeFormat.utc : d3.time.format.utc;
+                fmt = d3locale ? d3locale.timeFormat : utcFormat;
                 var ms = lib.dateTime2ms(value);
                 value = lib.formatDate(ms, format.replace(TEMPLATE_STRING_FORMAT_SEPARATOR, ''), false, fmt);
             }
@@ -1187,6 +1186,18 @@ lib.isHidden = function(gd) {
     return !display || display === 'none';
 };
 
+lib.strTranslate = function(x, y) {
+    return (x || y) ? 'translate(' + x + ',' + y + ')' : '';
+};
+
+lib.strRotate = function(a) {
+    return a ? 'rotate(' + a + ')' : '';
+};
+
+lib.strScale = function(s) {
+    return s !== 1 ? 'scale(' + s + ')' : '';
+};
+
 /** Return transform text for bar bar-like rectangles and pie-like slices
  *  @param {object} transform
  *  - targetX: desired position on the x-axis
@@ -1213,13 +1224,11 @@ lib.getTextTransform = function(transform) {
     else if(scale > 1) scale = 1;
 
     return (
-        'translate(' +
-            (targetX - scale * (textX + anchorX)) + ',' +
-            (targetY - scale * (textY + anchorY)) +
-        ')' +
-        (scale < 1 ?
-            'scale(' + scale + ')' : ''
+        lib.strTranslate(
+            targetX - scale * (textX + anchorX),
+            targetY - scale * (textY + anchorY)
         ) +
+        lib.strScale(scale) +
         (rotate ?
             'rotate(' + rotate +
                 (noCenter ? '' : ' ' + textX + ' ' + textY) +
@@ -1235,4 +1244,21 @@ lib.ensureUniformFontSize = function(gd, baseFont) {
         gd._fullLayout.uniformtext.minsize || 0
     );
     return out;
+};
+
+/**
+ * provide a human-readable list e.g. "A, B, C and D" with an ending separator
+ *
+ * @param {array} arr : the array to join
+ * @param {string} mainSeparator : main separator
+ * @param {string} lastSeparator : last separator
+ *
+ * @return {string} : joined list
+ */
+lib.join2 = function(arr, mainSeparator, lastSeparator) {
+    var len = arr.length;
+    if(len > 1) {
+        return arr.slice(0, -1).join(mainSeparator) + lastSeparator + arr[len - 1];
+    }
+    return arr.join(mainSeparator);
 };

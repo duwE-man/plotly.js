@@ -1,15 +1,6 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
-
 'use strict';
 
-var d3 = require('d3');
+var timeFormat = require('d3-time-format').timeFormat;
 var isNumeric = require('fast-isnumeric');
 
 var Loggers = require('./loggers');
@@ -25,11 +16,11 @@ var EPOCHJD = constants.EPOCHJD;
 
 var Registry = require('../registry');
 
-var utcFormat = d3.time.format.utc;
+var utcFormat = require('d3-time-format').utcFormat;
 
-var DATETIME_REGEXP = /^\s*(-?\d\d\d\d|\d\d)(-(\d?\d)(-(\d?\d)([ Tt]([01]?\d|2[0-3])(:([0-5]\d)(:([0-5]\d(\.\d+)?))?(Z|z|[+\-]\d\d:?\d\d)?)?)?)?)?\s*$/m;
+var DATETIME_REGEXP = /^\s*(-?\d\d\d\d|\d\d)(-(\d?\d)(-(\d?\d)([ Tt]([01]?\d|2[0-3])(:([0-5]\d)(:([0-5]\d(\.\d+)?))?(Z|z|[+\-]\d\d(:?\d\d)?)?)?)?)?)?\s*$/m;
 // special regex for chinese calendars to support yyyy-mmi-dd etc for intercalary months
-var DATETIME_REGEXP_CN = /^\s*(-?\d\d\d\d|\d\d)(-(\d?\di?)(-(\d?\d)([ Tt]([01]?\d|2[0-3])(:([0-5]\d)(:([0-5]\d(\.\d+)?))?(Z|z|[+\-]\d\d:?\d\d)?)?)?)?)?\s*$/m;
+var DATETIME_REGEXP_CN = /^\s*(-?\d\d\d\d|\d\d)(-(\d?\di?)(-(\d?\d)([ Tt]([01]?\d|2[0-3])(:([0-5]\d)(:([0-5]\d(\.\d+)?))?(Z|z|[+\-]\d\d(:?\d\d)?)?)?)?)?)?\s*$/m;
 
 // for 2-digit years, the first year we map them onto
 var YFIRST = new Date().getFullYear() - 70;
@@ -45,9 +36,23 @@ function isWorldCalendar(calendar) {
 /*
  * dateTick0: get the canonical tick for this calendar
  *
+ * integer weekdays : Saturday: 0, Sunday: 1, Monday: 2, etc.
+ */
+exports.dateTick0 = function(calendar, dayOfWeek) {
+    var tick0 = _dateTick0(calendar, !!dayOfWeek);
+    if(dayOfWeek < 2) return tick0;
+
+    var v = exports.dateTime2ms(tick0, calendar);
+    v += ONEDAY * (dayOfWeek - 1); // shift Sunday to Monday, etc.
+    return exports.ms2DateTime(v, 0, calendar);
+};
+
+/*
+ * _dateTick0: get the canonical tick for this calendar
+ *
  * bool sunday is for week ticks, shift it to a Sunday.
  */
-exports.dateTick0 = function(calendar, sunday) {
+function _dateTick0(calendar, sunday) {
     if(isWorldCalendar(calendar)) {
         return sunday ?
             Registry.getComponentMethod('calendars', 'CANONICAL_SUNDAY')[calendar] :
@@ -55,7 +60,7 @@ exports.dateTick0 = function(calendar, sunday) {
     } else {
         return sunday ? '2000-01-02' : '2000-01-01';
     }
-};
+}
 
 /*
  * dfltRange: for each calendar, give a valid default range
@@ -90,8 +95,9 @@ var MIN_MS, MAX_MS;
  *    -?YYYY-mm-dd<sep>HH:MM:SS.sss<tzInfo>?
  *
  * <sep>: space (our normal standard) or T or t (ISO-8601)
- * <tzInfo>: Z, z, or [+\-]HH:?MM and we THROW IT AWAY
+ * <tzInfo>: Z, z, [+\-]HH:?MM or [+\-]HH and we THROW IT AWAY
  * this format comes from https://tools.ietf.org/html/rfc3339#section-5.6
+ * and 4.2.5.1 Difference between local time and UTC of day (ISO-8601)
  * but we allow it even with a space as the separator
  *
  * May truncate after any full field, and sss can be any length
@@ -305,7 +311,7 @@ exports.ms2DateTimeLocal = function(ms) {
 
     var msecTenths = Math.floor(mod(ms + 0.05, 1) * 10);
     var d = new Date(Math.round(ms - msecTenths / 10));
-    var dateStr = d3.time.format('%Y-%m-%d')(d);
+    var dateStr = timeFormat('%Y-%m-%d')(d);
     var h = d.getHours();
     var m = d.getMinutes();
     var s = d.getSeconds();

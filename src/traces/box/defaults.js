@@ -1,16 +1,9 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
 var Lib = require('../../lib');
 var Registry = require('../../registry');
 var Color = require('../../components/color');
+var handlePeriodDefaults = require('../scatter/period_defaults');
 var handleGroupingDefaults = require('../bar/defaults').handleGroupingDefaults;
 var autoType = require('../../plots/cartesian/axis_autotype');
 var attributes = require('./attributes');
@@ -22,6 +15,8 @@ function supplyDefaults(traceIn, traceOut, defaultColor, layout) {
 
     handleSampleDefaults(traceIn, traceOut, coerce, layout);
     if(traceOut.visible === false) return;
+
+    handlePeriodDefaults(traceIn, traceOut, layout, coerce);
 
     var hasPreCompStats = traceOut._hasPreCompStats;
 
@@ -106,6 +101,11 @@ function handleSampleDefaults(traceIn, traceOut, coerce, layout) {
     var yLen = yDims && Lib.minRowLength(y);
     var xLen = xDims && Lib.minRowLength(x);
 
+    var calendar = layout.calendar;
+    var opts = {
+        autotypenumbers: layout.autotypenumbers
+    };
+
     var defaultOrientation, len;
     if(traceOut._hasPreCompStats) {
         switch(String(xDims) + String(yDims)) {
@@ -157,7 +157,7 @@ function handleSampleDefaults(traceIn, traceOut, coerce, layout) {
                 var hasCategories = false;
                 var i;
                 for(i = 0; i < x.length; i++) {
-                    if(autoType(x[i]) === 'category') {
+                    if(autoType(x[i], calendar, opts) === 'category') {
                         hasCategories = true;
                         break;
                     }
@@ -168,7 +168,7 @@ function handleSampleDefaults(traceIn, traceOut, coerce, layout) {
                     len = Math.min(sLen, xLen, y.length);
                 } else {
                     for(i = 0; i < y.length; i++) {
-                        if(autoType(y[i]) === 'category') {
+                        if(autoType(y[i], calendar, opts) === 'category') {
                             hasCategories = true;
                             break;
                         }

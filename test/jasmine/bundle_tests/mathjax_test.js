@@ -1,9 +1,9 @@
 var Plotly = require('@lib/index');
-var d3 = require('d3');
+var d3Select = require('../../strict-d3').select;
 
 var createGraphDiv = require('../assets/create_graph_div');
 var destroyGraphDiv = require('../assets/destroy_graph_div');
-var failTest = require('../assets/fail_test');
+
 
 describe('Test MathJax:', function() {
     var mathJaxScriptTag;
@@ -24,7 +24,7 @@ describe('Test MathJax:', function() {
         mathJaxScriptTag.onerror = function() {
             fail('MathJax failed to load');
         };
-        mathJaxScriptTag.src = '/base/dist/extras/mathjax/MathJax.js?config=TeX-AMS-MML_SVG';
+        mathJaxScriptTag.src = '/base/vendor/extras/mathjax/MathJax.js?config=TeX-AMS-MML_SVG';
         document.body.appendChild(mathJaxScriptTag);
     });
 
@@ -38,7 +38,7 @@ describe('Test MathJax:', function() {
         afterEach(destroyGraphDiv);
 
         function assertNoIntersect(msg) {
-            var gd3 = d3.select(gd);
+            var gd3 = d3Select(gd);
             var xTitle = gd3.select('.g-xtitle');
             var xTicks = gd3.selectAll('.xtick > text');
 
@@ -56,7 +56,7 @@ describe('Test MathJax:', function() {
         function testTitleScoot(fig, opts) {
             var xCategories = opts.xCategories;
 
-            return Plotly.plot(gd, fig)
+            return Plotly.newPlot(gd, fig)
                 .then(function() { assertNoIntersect('base'); })
                 .then(function() { return Plotly.relayout(gd, 'xaxis.titlefont.size', 40); })
                 .then(function() { assertNoIntersect('large title font size'); })
@@ -95,8 +95,7 @@ describe('Test MathJax:', function() {
             }, {
                 xCategories: longCats
             })
-            .catch(failTest)
-            .then(done);
+            .then(done, done.fail);
         });
 
         it('should scoot x-axis title (with MathJax) below x-axis ticks', function(done) {
@@ -115,8 +114,7 @@ describe('Test MathJax:', function() {
             }, {
                 xCategories: longCats
             })
-            .catch(failTest)
-            .then(done);
+            .then(done, done.fail);
         });
 
         it('should scoot x-axis title below x-axis ticks (with MathJax)', function(done) {
@@ -136,8 +134,7 @@ describe('Test MathJax:', function() {
             }, {
                 xCategories: longTexCats
             })
-            .catch(failTest)
-            .then(done);
+            .then(done, done.fail);
         });
 
         it('should scoot x-axis title (with MathJax) below x-axis ticks (with MathJax)', function(done) {
@@ -157,8 +154,7 @@ describe('Test MathJax:', function() {
             }, {
                 xCategories: longTexCats
             })
-            .catch(failTest)
-            .then(done);
+            .then(done, done.fail);
         });
     });
 });

@@ -1,19 +1,12 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
 /* global PlotlyGeoAssets:false */
 
-var d3 = require('d3');
+var d3 = require('@plotly/d3');
 
 var Registry = require('../../registry');
 var Lib = require('../../lib');
+var strTranslate = Lib.strTranslate;
 var Color = require('../../components/color');
 var Drawing = require('../../components/drawing');
 var Fx = require('../../components/fx');
@@ -230,7 +223,7 @@ proto.updateProjection = function(geoCalcData, fullLayout) {
 
             var projType = projLayout.type;
             var lonHalfSpan = (constants.lonaxisSpan[projType] / 2) || 180;
-            var latHalfSpan = (constants.lataxisSpan[projType] / 2) || 180;
+            var latHalfSpan = (constants.lataxisSpan[projType] / 2) || 90;
 
             lonaxisRange = [midLon - lonHalfSpan, midLon + lonHalfSpan];
             lataxisRange = [midLat - latHalfSpan, midLat + latHalfSpan];
@@ -632,7 +625,7 @@ proto.render = function() {
     function translatePoints(d) {
         var lonlatPx = projection(d.lonlat);
         return lonlatPx ?
-            'translate(' + lonlatPx[0] + ',' + lonlatPx[1] + ')' :
+            strTranslate(lonlatPx[0], lonlatPx[1]) :
              null;
     }
 

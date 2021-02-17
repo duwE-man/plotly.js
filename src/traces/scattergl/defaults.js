@@ -1,11 +1,3 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
 var Lib = require('../../lib');
@@ -16,6 +8,7 @@ var attributes = require('./attributes');
 var constants = require('../scatter/constants');
 var subTypes = require('../scatter/subtypes');
 var handleXYDefaults = require('../scatter/xy_defaults');
+var handlePeriodDefaults = require('../scatter/period_defaults');
 var handleMarkerDefaults = require('../scatter/marker_defaults');
 var handleLineDefaults = require('../scatter/line_defaults');
 var handleFillColorDefaults = require('../scatter/fillcolor_defaults');
@@ -34,6 +27,9 @@ module.exports = function supplyDefaults(traceIn, traceOut, defaultColor, layout
         traceOut.visible = false;
         return;
     }
+
+    handlePeriodDefaults(traceIn, traceOut, layout, coerce);
+
     var defaultMode = len < constants.PTS_LINESONLY ? 'lines+markers' : 'lines';
 
     coerce('text');

@@ -1,11 +1,3 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
 module.exports = Sieve;
@@ -48,7 +40,10 @@ function Sieve(traces, opts) {
     }
     this.positions = positions;
 
-    var dv = distinctVals(positions);
+    var dv = distinctVals(positions, {
+        unitMinDiff: opts.unitMinDiff
+    });
+
     this.distinctPositions = dv.vals;
     if(dv.vals.length === 1 && width1 !== Infinity) this.minDiff = width1;
     else this.minDiff = Math.min(dv.minDiff, width1);

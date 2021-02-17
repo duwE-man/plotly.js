@@ -4,10 +4,11 @@ var Lib = require('@src/lib');
 
 var Image = require('@src/traces/image');
 
-var d3 = require('d3');
+var d3Select = require('../../strict-d3').select;
+var d3SelectAll = require('../../strict-d3').selectAll;
 var createGraphDiv = require('../assets/create_graph_div');
 var destroyGraphDiv = require('../assets/destroy_graph_div');
-var failTest = require('../assets/fail_test');
+
 
 var customAssertions = require('../assets/custom_assertions');
 var assertHoverLabelContent = customAssertions.assertHoverLabelContent;
@@ -57,10 +58,51 @@ describe('image supplyDefaults', function() {
         expect(traceOut.visible).toBe(true);
     });
 
+    it('should set visible to false when source is empty', function() {
+        traceIn = {
+            source: null
+        };
+        supplyDefaults(traceIn, traceOut);
+        expect(traceOut.visible).toBe(false);
+
+        traceIn = {
+            type: 'image',
+            source: 'data:image/png;base64,somedata'
+        };
+        traceOut = Plots.supplyTraceDefaults(traceIn, {type: 'image'}, 0, layout);
+        expect(traceOut.visible).toBe(true);
+    });
+
+    it('should set visible to false when source is a URL', function() {
+        traceIn = {
+            source: 'https://antrg.com/assets/img/portrait_2013_circle_200px.png'
+        };
+        supplyDefaults(traceIn, traceOut);
+        expect(traceOut.visible).toBe(false);
+        expect(traceOut.source).toBe(undefined);
+
+        traceIn = {
+            type: 'image',
+            source: 'data:image/png;base64,somedata'
+        };
+        traceOut = Plots.supplyTraceDefaults(traceIn, {type: 'image'}, 0, layout);
+        expect(traceOut.visible).toBe(true);
+    });
+
+    it('should not accept source attribute that is not a data URI of an image', function() {
+        traceIn = {
+            source: 'javascript:alert(\'attack\')'
+        };
+
+        supplyDefaults(traceIn, traceOut);
+        expect(traceOut.source).toBe(undefined);
+    });
+
     it('should set proper zmin/zmax depending on colormodel', function() {
         var tests = [
           ['rgb', [0, 0, 0], [255, 255, 255]],
           ['rgba', [0, 0, 0, 0], [255, 255, 255, 1]],
+          ['rgba256', [0, 0, 0, 0], [255, 255, 255, 255]],
           ['hsl', [0, 0, 0], [360, 100, 100]],
           ['hsla', [0, 0, 0, 0], [360, 100, 100, 1]]
         ];
@@ -98,6 +140,28 @@ describe('image supplyDefaults', function() {
         supplyDefaults(traceIn, traceOut);
         expect(traceOut.zmin).toEqual([0, 10, 0, 0], 'zmin default');
         expect(traceOut.zmax).toEqual([20, 100, 100, 1], 'zmax default');
+    });
+
+    it('should set colormodel to rgba256 when source is defined', function() {
+        traceIn = {
+            type: 'image',
+            source: 'data:image/png;base64,asdf'
+        };
+        supplyDefaults(traceIn, traceOut);
+        expect(traceOut.colormodel).toBe('rgba256');
+    });
+
+    it('should override zmin/zmax when source is defined', function() {
+        traceIn = {
+            type: 'image',
+            source: 'data:image/png;base64,asdf',
+            zmin: 100,
+            zmax: 50
+        };
+        supplyDefaults(traceIn, traceOut);
+        expect(traceOut.colormodel).toBe('rgba256');
+        expect(traceOut.zmin).toEqual([0, 0, 0, 0]);
+        expect(traceOut.zmax).toEqual([255, 255, 255, 255]);
     });
 });
 
@@ -145,11 +209,11 @@ describe('image smart layout defaults', function() {
         expect(gd._fullLayout.yaxis.scaleanchor).toBe('x');
     });
 
-    it('should NOT set scaleanchor if it\'s already defined', function() {
-        gd.data = [{type: 'image', z: [[[255, 0, 0]]]}];
+    it('should NOT reset scaleanchor if it\'s already defined', function() {
+        gd.data = [{type: 'image', z: [[[255, 0, 0]]]}, {y: [5, 3, 2], xaxis: 'x3'}];
         gd.layout = {yaxis: {scaleanchor: 'x3'}};
         supplyAllDefaults(gd);
-        expect(gd._fullLayout.yaxis.scaleanchor).toBe(undefined);
+        expect(gd._fullLayout.yaxis.scaleanchor).toBe('x3');
     });
 
     it('should constrain axes to domain if images are present', function() {
@@ -170,7 +234,7 @@ describe('image smart layout defaults', function() {
 
     it('should NOT constrain axes to domain if it\'s already defined', function() {
         gd.data = [{type: 'image', z: [[[255, 0, 0]]]}];
-        gd.layout = {yaxis: {constrain: false}, xaxis: {constrain: false}};
+        gd.layout = {yaxis: {constrain: 'range'}, xaxis: {constrain: 'range'}};
         supplyAllDefaults(gd);
         expect(gd._fullLayout.xaxis.constrain).toBe('range');
         expect(gd._fullLayout.yaxis.constrain).toBe('range');
@@ -194,12 +258,12 @@ describe('image plot', function() {
         var mockCopy = Lib.extendDeep({}, mock);
 
         function assertImageCnt(cnt) {
-            var images = d3.selectAll(sel);
+            var images = d3SelectAll(sel);
 
             expect(images.size()).toEqual(cnt);
         }
 
-        Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(function() {
+        Plotly.newPlot(gd, mockCopy.data, mockCopy.layout).then(function() {
             assertImageCnt(1);
 
             return Plotly.relayout(gd, 'xaxis.range', [-100, -50]);
@@ -210,12 +274,11 @@ describe('image plot', function() {
         }).then(function() {
             assertImageCnt(1);
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 
     function getImageURL() {
-        return d3.select(sel).attr('href');
+        return d3Select(sel).attr('href');
     }
 
     [
@@ -260,8 +323,7 @@ describe('image plot', function() {
 
                 expect(imageURLs[1]).toEqual(imageURLs[3], 'image should restyle step 1');
             })
-            .catch(failTest)
-            .then(done);
+            .then(done, done.fail);
         });
     });
 
@@ -271,28 +333,27 @@ describe('image plot', function() {
 
         var x = []; var y = [];
         Plotly.newPlot(gd, mockCopy).then(function() {
-            x.push(d3.select(sel).attr('x'));
-            y.push(d3.select(sel).attr('y'));
+            x.push(d3Select(sel).attr('x'));
+            y.push(d3Select(sel).attr('y'));
 
             return Plotly.restyle(gd, {x0: 50, y0: 50});
         }).then(function() {
-            x.push(d3.select(sel).attr('x'));
-            y.push(d3.select(sel).attr('y'));
+            x.push(d3Select(sel).attr('x'));
+            y.push(d3Select(sel).attr('y'));
             expect(x[1]).not.toEqual(x[0], 'image element should have a different x position');
             expect(y[1]).not.toEqual(y[0], 'image element should have a different y position');
 
             return Plotly.restyle(gd, {x0: 0, y0: 0});
         }).then(function() {
-            x.push(d3.select(sel).attr('x'));
-            y.push(d3.select(sel).attr('y'));
+            x.push(d3Select(sel).attr('x'));
+            y.push(d3Select(sel).attr('y'));
             expect(x[2]).not.toEqual(x[1], 'image element should have a different x position (step 2)');
             expect(y[2]).not.toEqual(y[1], 'image element should have a different y position (step 2)');
 
             expect(x[2]).toEqual(x[0]);
             expect(y[2]).toEqual(y[0]);
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 
     it('should handle restyling x0/y0 to category', function(done) {
@@ -303,24 +364,23 @@ describe('image plot', function() {
         Plotly.newPlot(gd, mockCopy).then(function() {
             return Plotly.restyle(gd, {x0: 50, y0: 50});
         }).then(function() {
-            x.push(d3.select(sel).attr('x'));
-            y.push(d3.select(sel).attr('y'));
+            x.push(d3Select(sel).attr('x'));
+            y.push(d3Select(sel).attr('y'));
 
             return Plotly.restyle(gd, {x0: 'A', y0: 'F'});
         }).then(function() {
-            x.push(d3.select(sel).attr('x'));
-            y.push(d3.select(sel).attr('y'));
+            x.push(d3Select(sel).attr('x'));
+            y.push(d3Select(sel).attr('y'));
             expect(x[1]).toEqual(x[0], 'image element should have same x position');
             expect(y[1]).toEqual(y[0], 'image element should have same y position');
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 
     it('keeps the correct ordering after hide and show', function(done) {
         function getIndices() {
             var out = [];
-            d3.selectAll('.im image').each(function(d) { out.push(d.trace.index); });
+            d3SelectAll('.im image').each(function(d) { if(d[0].trace) out.push(d[0].trace.index); });
             return out;
         }
 
@@ -343,8 +403,36 @@ describe('image plot', function() {
         .then(function() {
             expect(getIndices()).toEqual([0, 1]);
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
+    });
+
+    it('renders pixelated image when source is defined', function(done) {
+        var mock = require('@mocks/image_astronaut_source.json');
+        var mockCopy = Lib.extendDeep({}, mock);
+        Plotly.newPlot(gd, mockCopy)
+        .then(function(gd) {
+            expect(gd.calcdata[0][0].trace._realImage).toBeTruthy();
+        })
+        .then(done, done.fail);
+    });
+
+    [
+      ['yaxis.type', 'log'],
+      ['xaxis.type', 'log']
+    ].forEach(function(attr) {
+        it('does not renders pixelated image when the axes are not compatible', function(done) {
+            var mock = require('@mocks/image_astronaut_source.json');
+            var mockCopy = Lib.extendDeep({}, mock);
+            Plotly.newPlot(gd, mockCopy)
+            .then(function(gd) {
+                expect(gd.calcdata[0][0].trace._realImage).toBe(true);
+                return Plotly.relayout(gd, attr[0], attr[1]);
+            })
+            .then(function(gd) {
+                expect(gd.calcdata[0][0].trace._realImage).toBe(false, 'when ' + attr[0] + ' is ' + attr[1]);
+            })
+            .then(done, done.fail);
+        });
     });
 });
 
@@ -353,14 +441,14 @@ describe('image hover:', function() {
 
     var gd;
 
-    describe('for `image_cat`', function() {
+    describe('for `image_cat` defined by z', function() {
         beforeAll(function(done) {
             gd = createGraphDiv();
 
             var mock = require('@mocks/image_cat.json');
             var mockCopy = Lib.extendDeep({}, mock);
 
-            Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(done);
+            Plotly.newPlot(gd, mockCopy.data, mockCopy.layout).then(done);
         });
 
         afterAll(destroyGraphDiv);
@@ -398,7 +486,7 @@ describe('image hover:', function() {
         });
     });
 
-    describe('for `image_adventurer`', function() {
+    describe('for `image_adventurer` defined by z', function() {
         var mock = require('@mocks/image_adventurer.json');
         beforeAll(function() {
             gd = createGraphDiv();
@@ -423,8 +511,7 @@ describe('image hover:', function() {
                     name: ''
                 });
             })
-            .catch(failTest)
-            .then(done);
+            .then(done, done.fail);
         });
 
         it('should display RGB channel values', function(done) {
@@ -438,8 +525,7 @@ describe('image hover:', function() {
                     name: ''
                 });
             })
-            .catch(failTest)
-            .then(done);
+            .then(done, done.fail);
         });
 
         it('should display RGBA channel values', function(done) {
@@ -448,12 +534,11 @@ describe('image hover:', function() {
             .then(function() {_hover(255, 295);})
             .then(function() {
                 assertHoverLabelContent({
-                    nums: 'x: 31.5\ny: 35.5\nz: [128, 77, 54, 254]\nRGBA: [128, 77, 54, 1]',
+                    nums: 'x: 31.5\ny: 35.5\nz: [128, 77, 54, 255]\nRGBA: [128, 77, 54, 1]',
                     name: ''
                 });
             })
-            .catch(failTest)
-            .then(done);
+            .then(done, done.fail);
         });
 
         it('should display HSL channel values', function(done) {
@@ -467,8 +552,7 @@ describe('image hover:', function() {
                     name: ''
                 });
             })
-            .catch(failTest)
-            .then(done);
+            .then(done, done.fail);
         });
 
         it('should display HSLA channel values', function(done) {
@@ -478,12 +562,11 @@ describe('image hover:', function() {
             .then(function() {_hover(255, 295);})
             .then(function() {
                 assertHoverLabelContent({
-                    nums: 'x: 31.5\ny: 35.5\nz: [128, 77, 54, 254]\nHSLA: [128°, 77%, 54%, 1]',
+                    nums: 'x: 31.5\ny: 35.5\nz: [128, 77, 54, 255]\nHSLA: [128°, 77%, 54%, 1]',
                     name: ''
                 });
             })
-            .catch(failTest)
-            .then(done);
+            .then(done, done.fail);
         });
 
         [
@@ -509,8 +592,7 @@ describe('image hover:', function() {
                         name: ''
                     }, 'variable `' + test[0] + '` should be available!');
                 })
-                .catch(failTest)
-                .then(done);
+                .then(done, done.fail);
             });
         });
 
@@ -531,8 +613,77 @@ describe('image hover:', function() {
                     name: ''
                 }, 'variable text should be available!');
             })
-            .catch(failTest)
-            .then(done);
+            .then(done, done.fail);
+        });
+    });
+
+    describe('for `image_astronaut_source` defined by source', function() {
+        var mock = require('@mocks/image_astronaut_source.json');
+        beforeAll(function() {
+            gd = createGraphDiv();
+        });
+
+        afterAll(destroyGraphDiv);
+
+        function _hover(x, y) {
+            var evt = { xpx: x, ypx: y };
+            return Fx.hover('graph', evt, 'xy');
+        }
+
+        [
+          ['x', '205'],
+          ['y', '125'],
+          ['color', '[202, 148, 125, 1]'],
+          ['color[0]', '202'],
+          ['z', '[202, 148, 125, 255]'],
+          ['z[0]', '202']
+        ].forEach(function(test) {
+            it('should support hovertemplate variable ' + test[0], function(done) {
+                var mockCopy = Lib.extendDeep({}, mock);
+                mockCopy.data[0].colormodel = 'rgba';
+                mockCopy.data[0].hovertemplate = '%{' + test[0] + '}<extra></extra>';
+                Plotly.newPlot(gd, mockCopy)
+                .then(function() {_hover(205, 125);})
+                .then(function() {
+                    assertHoverLabelContent({
+                        nums: test[1],
+                        name: ''
+                    }, 'variable `' + test[0] + '` should be available!');
+                })
+                .then(done, done.fail);
+            });
+        });
+
+        [
+            [true, true],
+            [true, 'reversed'],  // the default image layout
+            ['reversed', true],
+            ['reversed', 'reversed']
+        ].forEach(function(test) {
+            it('should show correct hover info regardless of axis directions ' + test, function(done) {
+                var mockCopy = Lib.extendDeep({}, mock);
+                mockCopy.layout.xaxis.autorange = test[0];
+                mockCopy.layout.yaxis.autorange = test[1];
+                mockCopy.data[0].colormodel = 'rgba';
+                mockCopy.data[0].hovertemplate = 'x:%{x}, y:%{y}, z:%{z}<extra></extra>';
+                Plotly.newPlot(gd, mockCopy)
+                .then(function() {
+                    var x = 205;
+                    var y = 125;
+
+                    // adjust considering css
+                    if(test[0] === 'reversed') x = 512 - x;
+                    if(test[1] !== 'reversed') y = 512 - y;
+                    _hover(x, y);
+                })
+                .then(function() {
+                    assertHoverLabelContent({
+                        nums: 'x:205, y:125, z:[202, 148, 125, 255]',
+                        name: ''
+                    }, 'positions should be correct!');
+                })
+                .then(done, done.fail);
+            });
         });
     });
 });

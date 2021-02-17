@@ -6,7 +6,11 @@ var prettySize = require('prettysize');
 
 var common = require('./util/common');
 var constants = require('./util/constants');
-var pkg = require('../package.json');
+var pkgVersion = require('../package.json').version;
+var majorVersion = pkgVersion.split('.')[0];
+var theLatest = 'latest' + (
+    (majorVersion === '1') ? '' : ('-v' + majorVersion)
+);
 
 var pathDistREADME = path.join(constants.pathToDist, 'README.md');
 var cdnRoot = 'https://cdn.plot.ly/plotly-';
@@ -46,15 +50,6 @@ function getInfoContent() {
         '<script src="plotly.js" charset="utf-8"></script>',
         '```',
         '',
-        '### To support IE9',
-        '',
-        '*Before* the plotly.js script tag, add:',
-        '',
-        '```html',
-        '<script>if(typeof window.Int16Array !== \'function\')document.write("<scri"+"pt src=\'extras/typedarray.min.js\'></scr"+"ipt>");</script>',
-        '<script>document.write("<scri"+"pt src=\'extras/request_animation_frame.js\'></scr"+"ipt>");</script>',
-        '```',
-        '',
         '### To support MathJax',
         '',
         '*Before* the plotly.js script tag, add:',
@@ -63,7 +58,8 @@ function getInfoContent() {
         '<script src="mathjax/MathJax.js?config=TeX-AMS-MML_SVG"></script>',
         '```',
         '',
-        'You can grab the relevant MathJax files in `./dist/extras/mathjax/`.',
+        'You can get the relevant MathJax files in `./vendor/extras/mathjax/` or from the internet',
+        'e.g. "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.3/MathJax.js?config=TeX-AMS-MML_SVG.js"',
         '',
         'By default, plotly.js will modify the global MathJax configuration on load.',
         'This can lead to undesirable behavior if plotly.js is loaded alongside',
@@ -83,7 +79,7 @@ function getInfoContent() {
         'Plotly.js defaults to US English (en-US) and includes British English (en) in the standard bundle.',
         'Many other localizations are available - here is an example using Swiss-German (de-CH),',
         'see the contents of this directory for the full list.',
-        'They are also available on our CDN as ' + cdnRoot + 'locale-de-ch-latest.js OR ' + cdnRoot + 'locale-de-ch-' + pkg.version + '.js',
+        'They are also available on our CDN as ' + cdnRoot + 'locale-de-ch-' + theLatest + '.js OR ' + cdnRoot + 'locale-de-ch-' + pkgVersion + '.js',
         'Note that the file names are all lowercase, even though the region is uppercase when you apply a locale.',
         '',
         '*After* the plotly.js script tag, add:',
@@ -118,12 +114,12 @@ function getMainBundleInfo() {
         '',
         'It be can imported as minified javascript',
         '- using dist file `dist/plotly.min.js`',
-        '- using CDN URL ' + cdnRoot + 'latest' + MINJS + ' OR ' + cdnRoot + pkg.version + MINJS,
+        '- using CDN URL ' + cdnRoot + theLatest + MINJS + ' OR ' + cdnRoot + pkgVersion + MINJS,
         '',
         'or as raw javascript:',
         '- using the `plotly.js-dist` npm package (starting in `v1.39.0`)',
         '- using dist file `dist/plotly.js`',
-        '- using CDN URL ' + cdnRoot + 'latest' + JS + ' OR ' + cdnRoot + pkg.version + JS,
+        '- using CDN URL ' + cdnRoot + theLatest + JS + ' OR ' + cdnRoot + pkgVersion + JS,
         '- using CommonJS with `require(\'plotly.js\')`',
         '',
         'If you would like to have access to the attribute meta information ' +
@@ -145,6 +141,10 @@ function getMainBundleInfo() {
         'Starting in `v1.39.0`, each plotly.js partial bundle has a corresponding npm package with no dependencies.',
         '',
         'Starting in `v1.50.0`, the minified version of each partial bundle is also published to npm in a separate "dist min" package.',
+        '',
+        'Starting in `v2.0.0`, the strict partial bundle includes everything except the traces that require function constructors.',
+        'Over time we hope to include more of the remaining trace types here, after which we intend to work on other strict CSP issues ',
+        'such as inline CSS that we may not be able to include in the main bundle.',
         ''
     ];
 }
@@ -190,10 +190,10 @@ function makeBundleInfo(pathObj) {
         '',
         '| Flavor | URL |',
         '| ------ | --- |',
-        '| Latest | ' + cdnRoot + name + '-latest' + JS + ' |',
-        '| Latest minified | ' + cdnRoot + name + '-latest' + MINJS + ' |',
-        '| Tagged | ' + cdnRoot + name + '-' + pkg.version + JS + ' |',
-        '| Tagged minified | ' + cdnRoot + name + '-' + pkg.version + MINJS + ' |',
+        '| Latest | ' + cdnRoot + name + '-' + theLatest + JS + ' |',
+        '| Latest minified | ' + cdnRoot + name + '-' + theLatest + MINJS + ' |',
+        '| Tagged | ' + cdnRoot + name + '-' + pkgVersion + JS + ' |',
+        '| Tagged minified | ' + cdnRoot + name + '-' + pkgVersion + MINJS + ' |',
         '',
         '#### npm package (starting in `v1.39.0`)',
         '',

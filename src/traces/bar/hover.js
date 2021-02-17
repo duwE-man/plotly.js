@@ -1,12 +1,3 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
-
 'use strict';
 
 var Fx = require('../../components/fx');
@@ -158,10 +149,13 @@ function hoverOnBars(pointData, xval, yval, hovermode) {
     var extent = t.extents[t.extents.round(di.p)];
     pointData[posLetter + '0'] = pa.c2p(isClosest ? minPos(di) : extent[0], true);
     pointData[posLetter + '1'] = pa.c2p(isClosest ? maxPos(di) : extent[1], true);
-    pointData[posLetter + 'LabelVal'] = di.p;
+
+    var hasPeriod = di.orig_p !== undefined;
+    pointData[posLetter + 'LabelVal'] = hasPeriod ? di.orig_p : di.p;
 
     pointData.labelLabel = hoverLabelText(pa, pointData[posLetter + 'LabelVal']);
     pointData.valueLabel = hoverLabelText(sa, pointData[sizeLetter + 'LabelVal']);
+    pointData.baseLabel = hoverLabelText(sa, di.b);
 
     // spikelines always want "closest" distance regardless of hovermode
     pointData.spikeDistance = (sizeFn(di) + thisBarPositionFn(di)) / 2 - maxHoverDistance;

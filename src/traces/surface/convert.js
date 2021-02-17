@@ -1,12 +1,3 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
-
 'use strict';
 
 var createSurface = require('gl-surface3d');
@@ -433,8 +424,7 @@ proto.update = function(data) {
     var scene = this.scene;
     var sceneLayout = scene.fullSceneLayout;
     var surface = this.surface;
-    var alpha = data.opacity;
-    var colormap = parseColorScale(data, alpha);
+    var colormap = parseColorScale(data);
     var scaleFactor = scene.dataScale;
     var xlen = data.z[0].length;
     var ylen = data._ylength;
@@ -678,10 +668,6 @@ proto.update = function(data) {
 
     if('lightposition' in data) {
         surface.lightPosition = [data.lightposition.x, data.lightposition.y, data.lightposition.z];
-    }
-
-    if(alpha && alpha < 1) {
-        surface.supportsTransparency = true;
     }
 };
 

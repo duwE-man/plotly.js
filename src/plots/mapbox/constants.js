@@ -1,11 +1,3 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
 var requiredVersion = '1.10.1';
@@ -167,7 +159,7 @@ module.exports = {
         'Missing Mapbox access token.',
         'Mapbox trace type require a Mapbox access token to be registered.',
         'For example:',
-        '  Plotly.plot(gd, data, layout, { mapboxAccessToken: \'my-access-token\' });',
+        '  Plotly.newPlot(gd, data, layout, { mapboxAccessToken: \'my-access-token\' });',
         'More info here: https://www.mapbox.com/help/define-access-token/'
     ].join('\n'),
 

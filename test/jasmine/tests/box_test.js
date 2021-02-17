@@ -4,10 +4,10 @@ var Plots = require('@src/plots/plots');
 
 var Box = require('@src/traces/box');
 
-var d3 = require('d3');
+var d3Select = require('../../strict-d3').select;
 var createGraphDiv = require('../assets/create_graph_div');
 var destroyGraphDiv = require('../assets/destroy_graph_div');
-var failTest = require('../assets/fail_test');
+
 var mouseEvent = require('../assets/mouse_event');
 var supplyAllDefaults = require('../assets/supply_defaults');
 
@@ -26,7 +26,7 @@ describe('Test boxes supplyDefaults', function() {
 
     it('should set visible to false when x and y are empty', function() {
         traceIn = {};
-        supplyDefaults(traceIn, traceOut, defaultColor);
+        supplyDefaults(traceIn, traceOut, defaultColor, {});
         expect(traceOut.visible).toBe(false);
 
         traceIn = {
@@ -636,6 +636,82 @@ describe('Test boxes supplyDefaults', function() {
     });
 });
 
+describe('Test box autoType', function() {
+    it('should disable converting numeric strings using axis.autotypenumbers', function() {
+        var gd = {
+            layout: {
+                xaxis: { autotypenumbers: 'strict' }
+            },
+            data: [{
+                type: 'box',
+                x: ['3', '0', '1', '2'],
+
+                xaxis: 'x',
+                lowerfence: ['0', '0', '0', '0'],
+                q1: ['0.5', '1', '1.5', '2'],
+                median: ['1', '2', '3', '4'],
+                q3: ['1.5', '3', '4.5', '6'],
+                upperfence: ['2', '4', '6', '8'],
+            }]
+        };
+
+        supplyAllDefaults(gd);
+
+        expect(gd._fullLayout.xaxis.autotypenumbers).toBe('strict');
+        expect(gd._fullLayout.xaxis.type).toBe('category');
+    });
+
+    it('should enable converting numeric strings using axis.autotypenumbers', function() {
+        var gd = {
+            layout: {
+                autotypenumbers: 'strict',
+                xaxis: { autotypenumbers: 'convert types' }
+            },
+            data: [{
+                type: 'box',
+                x: ['3', '0', '1', '2'],
+
+                xaxis: 'x',
+                lowerfence: ['0', '0', '0', '0'],
+                q1: ['0.5', '1', '1.5', '2'],
+                median: ['1', '2', '3', '4'],
+                q3: ['1.5', '3', '4.5', '6'],
+                upperfence: ['2', '4', '6', '8'],
+            }]
+        };
+
+        supplyAllDefaults(gd);
+
+        expect(gd._fullLayout.xaxis.autotypenumbers).toBe('convert types');
+        expect(gd._fullLayout.xaxis.type).toBe('linear');
+    });
+
+    it('should enable converting numeric inherit defaults from layout.autotypenumbers', function() {
+        var gd = {
+            layout: {
+                autotypenumbers: 'strict',
+                xaxis: {}
+            },
+            data: [{
+                type: 'box',
+                x: ['3', '0', '1', '2'],
+
+                xaxis: 'x',
+                lowerfence: ['0', '0', '0', '0'],
+                q1: ['0.5', '1', '1.5', '2'],
+                median: ['1', '2', '3', '4'],
+                q3: ['1.5', '3', '4.5', '6'],
+                upperfence: ['2', '4', '6', '8'],
+            }]
+        };
+
+        supplyAllDefaults(gd);
+
+        expect(gd._fullLayout.xaxis.autotypenumbers).toBe('strict');
+        expect(gd._fullLayout.xaxis.type).toBe('category');
+    });
+});
+
 describe('Test box hover:', function() {
     var gd;
 
@@ -655,7 +731,7 @@ describe('Test box hover:', function() {
 
         var pos = specs.pos || [200, 200];
 
-        return Plotly.plot(gd, fig).then(function() {
+        return Plotly.newPlot(gd, fig).then(function() {
             mouseEvent('mousemove', pos[0], pos[1]);
             assertHoverLabelContent(specs, specs.desc);
         });
@@ -956,7 +1032,7 @@ describe('Test box hover:', function() {
         axis: 'A'
     }].forEach(function(specs) {
         it('should generate correct hover labels ' + specs.desc, function(done) {
-            run(specs).catch(failTest).then(done);
+            run(specs).then(done, done.fail);
         });
     });
 });
@@ -987,8 +1063,7 @@ describe('Box edge cases', function() {
             expect(outliers.length).toBe(1);
             expect(outliers[0].x).toBe(0);
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 });
 
@@ -1012,13 +1087,13 @@ describe('Test box restyle:', function() {
         }
 
         function _assert(msg, exp) {
-            var trace3 = d3.select(gd).select('.boxlayer > .trace');
+            var trace3 = d3Select(gd).select('.boxlayer > .trace');
             _assertOne(msg, exp, trace3, 'boxCnt', 'path.box');
             _assertOne(msg, exp, trace3, 'meanlineCnt', 'path.mean');
             _assertOne(msg, exp, trace3, 'ptsCnt', 'path.point');
         }
 
-        Plotly.plot(gd, fig)
+        Plotly.newPlot(gd, fig)
         .then(function() {
             _assert('base', {boxCnt: 1});
         })
@@ -1038,8 +1113,7 @@ describe('Test box restyle:', function() {
         .then(function() {
             _assert('with pts', {boxCnt: 1, ptsCnt: 9});
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 
     it('should update axis range accordingly on calc edits', function(done) {
@@ -1049,7 +1123,7 @@ describe('Test box restyle:', function() {
             expect(fullLayout.yaxis.range).toBeCloseToArray(yrng, 2, msg + ' yrng');
         }
 
-        Plotly.plot(gd, [{
+        Plotly.newPlot(gd, [{
             type: 'box',
             y: [0, 1, 1, 1, 1, 2, 2, 3, 5, 6, 10]
         }], {
@@ -1074,8 +1148,7 @@ describe('Test box restyle:', function() {
         .then(function() {
             _assert('auto rng / no boxpoints', [-0.5, 0.5], [-0.555, 10.555]);
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 
     it('should be able to change axis range when the number of distinct positions changes', function(done) {
@@ -1085,7 +1158,7 @@ describe('Test box restyle:', function() {
             expect(fullLayout.yaxis.range).toBeCloseToArray(yrng, 2, msg + ' yrng');
         }
 
-        Plotly.plot(gd, [{
+        Plotly.newPlot(gd, [{
             type: 'box',
             width: 0.4,
             y: [0, 5, 7, 8],
@@ -1106,8 +1179,7 @@ describe('Test box restyle:', function() {
         .then(function() {
             _assert('only trace1 visible', [-0.5, 0.5], [-0.444, 8.444]);
         })
-        .catch(failTest)
-        .then(done);
+        .then(done, done.fail);
     });
 });
 
@@ -1532,5 +1604,53 @@ describe('Test box calc', function() {
                 ]]
             );
         });
+    });
+});
+
+
+describe('Box crossTraceCalc', function() {
+    'use strict';
+
+    function mockBoxPlot(dataWithoutTraceType, layout) {
+        var traceTemplate = { type: 'box' };
+
+        var dataWithTraceType = dataWithoutTraceType.map(function(trace) {
+            return Lib.extendFlat({}, traceTemplate, trace);
+        });
+
+        var gd = {
+            data: dataWithTraceType,
+            layout: layout || {},
+            calcdata: [],
+            _context: {locale: 'en', locales: {}}
+        };
+
+        supplyAllDefaults(gd);
+        Plots.doCalcdata(gd);
+
+        return gd;
+    }
+
+    it('should set unit width for categories in overlay mode', function() {
+        var gd = mockBoxPlot([{
+            y: [1, 2, 3]
+        },
+        {
+            y: [null, null, null]
+        },
+        {
+            y: [null, null, null]
+        },
+        {
+            y: [4, 5, 6]
+        }], {
+            boxgap: 0,
+            xaxis: {
+                range: [-0.5, 3.5],
+                type: 'category'
+            }
+        });
+
+        expect(gd.calcdata[0][0].t.dPos).toBe(0.5);
     });
 });

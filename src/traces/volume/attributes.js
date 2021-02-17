@@ -1,11 +1,3 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
 var colorScaleAttrs = require('../../components/colorscale/attributes');
@@ -27,7 +19,6 @@ var attrs = module.exports = overrideAll(extendFlat({
     spaceframe: {
         show: {
             valType: 'boolean',
-            role: 'info',
             dflt: false,
             description: [
                 'Displays/hides tetrahedron shapes between minimum and',
@@ -37,7 +28,6 @@ var attrs = module.exports = overrideAll(extendFlat({
         },
         fill: {
             valType: 'number',
-            role: 'style',
             min: 0,
             max: 1,
             dflt: 1,

@@ -4,10 +4,10 @@ var Drawing = require('@src/components/drawing');
 var constants = require('@src/components/legend/constants');
 var DBLCLICKDELAY = require('@src/plot_api/plot_config').dfltConfig.doubleClickDelay;
 
-var d3 = require('d3');
+var d3Select = require('../../strict-d3').select;
 var createGraph = require('../assets/create_graph_div');
 var destroyGraph = require('../assets/destroy_graph_div');
-var failTest = require('../assets/fail_test');
+
 var getBBox = require('../assets/get_bbox');
 var mouseEvent = require('../assets/mouse_event');
 var touchEvent = require('../assets/touch_event');
@@ -31,24 +31,24 @@ describe('The legend', function() {
     }
 
     function getLegendHeight(gd) {
-        var bg = d3.select('g.legend').select('.bg').node();
+        var bg = d3Select('g.legend').select('.bg').node();
         return gd._fullLayout.legend.borderwidth + getBBox(bg).height;
     }
 
     function getLegend() {
-        return d3.select('g.legend').node();
+        return d3Select('g.legend').node();
     }
 
     function getScrollBox() {
-        return d3.select('g.legend').select('.scrollbox').node();
+        return d3Select('g.legend').select('.scrollbox').node();
     }
 
     function getScrollBar() {
-        return d3.select('g.legend').select('.scrollbar').node();
+        return d3Select('g.legend').select('.scrollbar').node();
     }
 
     function getToggle() {
-        return d3.select('g.legend').select('.legendtoggle').node();
+        return d3Select('g.legend').select('.legendtoggle').node();
     }
 
     function getScroll(gd) {
@@ -70,9 +70,8 @@ describe('The legend', function() {
 
             var mockCopy = Lib.extendDeep({}, mock);
 
-            Plotly.plot(gd, mockCopy.data, mockCopy.layout).then(function() {
-                done();
-            });
+            Plotly.newPlot(gd, mockCopy.data, mockCopy.layout)
+            .then(done);
         });
 
         afterEach(destroyGraph);
@@ -109,7 +108,7 @@ describe('The legend', function() {
 
             expect(getScroll(gd)).toBe(finalDataScroll);
             expect(scrollBox.getAttribute('transform')).toBe(
-                'translate(0, ' + -finalDataScroll + ')');
+                'translate(0,' + -finalDataScroll + ')');
         });
 
         function dragScroll(element, rightClick, mainClick) {
@@ -158,7 +157,7 @@ describe('The legend', function() {
             var dataScroll = getScroll(gd);
             expect(dataScroll).toBeCloseTo(finalDataScroll, 3);
             expect(scrollBox.getAttribute('transform')).toBe(
-                'translate(0, ' + -dataScroll + ')');
+                'translate(0,' + -dataScroll + ')');
         });
 
         it('should not scroll on dragging the scrollbox with a mouse', function() {
@@ -167,8 +166,7 @@ describe('The legend', function() {
 
             var dataScroll = getScroll(gd);
             expect(dataScroll).not.toBeCloseTo(finalDataScroll, 3);
-            expect(scrollBox.getAttribute('transform')).toBe(
-                'translate(0, ' + -dataScroll + ')');
+            expect(scrollBox.getAttribute('transform')).toBe('');
         });
 
         it('should handle touch events on scrollbox', function(done) {
@@ -227,8 +225,7 @@ describe('The legend', function() {
 
             var dataScroll = getScroll(gd);
             expect(dataScroll).not.toBeCloseTo(finalDataScroll, 3);
-            expect(scrollBox.getAttribute('transform')).toBe(
-                'translate(0, ' + -dataScroll + ')');
+            expect(scrollBox.getAttribute('transform')).toBe('');
         });
 
         it('removes scroll bar and handlers when switching to horizontal', function(done) {
@@ -253,8 +250,7 @@ describe('The legend', function() {
                 expect(hasScrollBar()).toBe(true);
                 expect(getScroll(gd)).not.toBe(0);
             })
-            .catch(failTest)
-            .then(done);
+            .then(done, done.fail);
         });
 
         it('updates scrollBar size/existence on deleteTraces', function(done) {
@@ -288,8 +284,7 @@ describe('The legend', function() {
                 expect(hasScrollBar()).toBe(false);
                 expect(getScroll(gd)).toBeUndefined();
             })
-            .catch(failTest)
-            .then(done);
+            .then(done, done.fail);
         });
 
         it('should keep the scrollbar position after a toggle event', function(done) {
@@ -307,7 +302,7 @@ describe('The legend', function() {
                 expect(+toggle.parentNode.style.opacity).toBeLessThan(1);
                 expect(getScroll(gd)).toBe(dataScroll);
                 expect(scrollBox.getAttribute('transform')).toBe(
-                    'translate(0, ' + -dataScroll + ')');
+                    'translate(0,' + -dataScroll + ')');
                 done();
             }, DBLCLICKDELAY * 2);
         });
@@ -328,7 +323,6 @@ describe('The legend', function() {
 
             Plotly.relayout(gd, 'showlegend', false);
             Plotly.relayout(gd, 'showlegend', true);
-
             legend = getLegend();
             scrollBox = getScrollBox();
             scrollBar = getScrollBar();
@@ -345,7 +339,7 @@ describe('The legend', function() {
                 expect(+toggle.parentNode.style.opacity).toBeLessThan(1);
                 expect(getScroll(gd)).toBe(dataScroll);
                 expect(scrollBox.getAttribute('transform')).toBe(
-                    'translate(0, ' + -dataScroll + ')');
+                    'translate(0,' + -dataScroll + ')');
                 expect(scrollBar.getAttribute('width')).toBeGreaterThan(0);
                 expect(scrollBar.getAttribute('height')).toBeGreaterThan(0);
                 done();
@@ -357,10 +351,10 @@ describe('The legend', function() {
             var scrollBox = getScrollBox();
 
             legend.dispatchEvent(scrollTo(-100));
-            expect(scrollBox.getAttribute('transform')).toBe('translate(0, 0)');
+            expect(scrollBox.getAttribute('transform')).toBe('');
 
             legend.dispatchEvent(scrollTo(100000));
-            expect(scrollBox.getAttribute('transform')).toBe('translate(0, -179)');
+            expect(scrollBox.getAttribute('transform')).toBe('translate(0,-179)');
         });
 
         it('should scale the scrollbar movement from top to bottom', function() {
@@ -386,18 +380,19 @@ describe('The legend', function() {
             expect(countLegendGroups(gd)).toBe(1);
             expect(countLegendClipPaths(gd)).toBe(1);
 
-            Plotly.relayout(gd, 'showlegend', false).then(function() {
+            Plotly.relayout(gd, 'showlegend', false)
+            .then(function() {
                 expect(countLegendGroups(gd)).toBe(0);
                 expect(countLegendClipPaths(gd)).toBe(0);
-
-                done();
-            });
+            })
+            .then(done, done.fail);
         });
 
         it('should resize when relayout\'ed with new height', function(done) {
             var origLegendHeight = getLegendHeight(gd);
 
-            Plotly.relayout(gd, 'height', gd._fullLayout.height / 2).then(function() {
+            Plotly.relayout(gd, 'height', gd._fullLayout.height / 2)
+            .then(function() {
                 var legendHeight = getLegendHeight(gd);
 
                 // legend still exists and not duplicated
@@ -407,9 +402,8 @@ describe('The legend', function() {
                 // clippath resized to new height less than new plot height
                 expect(+legendHeight).toBe(getPlotHeight(gd));
                 expect(+legendHeight).toBeLessThan(+origLegendHeight);
-
-                done();
-            });
+            })
+            .then(done, done.fail);
         });
     });
 
@@ -422,7 +416,7 @@ describe('The legend', function() {
             var data = [{ x: [1, 2, 3], y: [2, 3, 4], name: 'Test' }];
             var layout = { showlegend: true };
 
-            Plotly.plot(gd, data, layout);
+            Plotly.newPlot(gd, data, layout);
         });
 
         afterEach(destroyGraph);
@@ -438,12 +432,12 @@ describe('The legend', function() {
             expect(countLegendGroups(gd)).toBe(1);
             expect(countLegendClipPaths(gd)).toBe(1);
 
-            Plotly.relayout(gd, 'showlegend', false).then(function() {
+            Plotly.relayout(gd, 'showlegend', false)
+            .then(function() {
                 expect(countLegendGroups(gd)).toBe(0);
                 expect(countLegendClipPaths(gd)).toBe(0);
-
-                done();
-            });
+            })
+            .then(done, done.fail);
         });
 
         it('should resize when traces added', function(done) {
@@ -453,9 +447,8 @@ describe('The legend', function() {
                 var legendHeight = getLegendHeight(gd);
 
                 expect(+legendHeight).toBeCloseTo(+origLegendHeight + 19, 0);
-
-                done();
-            });
+            })
+            .then(done, done.fail);
         });
     });
 });

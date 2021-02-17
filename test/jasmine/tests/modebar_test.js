@@ -1,4 +1,4 @@
-var d3 = require('d3');
+var d3Select = require('../../strict-d3').select;
 
 var createModeBar = require('@src/components/modebar/modebar');
 var manageModeBar = require('@src/components/modebar/manage');
@@ -37,8 +37,8 @@ describe('ModeBar', function() {
             _fullLayout: {
                 _uid: '6ea6a7',
                 dragmode: 'zoom',
-                _paperdiv: d3.select(getMockContainerTree()),
-                _modebardiv: d3.select(getMockModeBarTree()),
+                _paperdiv: d3Select(getMockContainerTree()),
+                _modebardiv: d3Select(getMockModeBarTree()),
                 _has: Plots._hasPlotType,
                 _subplots: {xaxis: xaxes || [], yaxis: yaxes || []},
                 modebar: {
@@ -63,20 +63,20 @@ describe('ModeBar', function() {
     }
 
     function countGroups(modeBar) {
-        return d3.select(modeBar.element).selectAll('div.modebar-group').size();
+        return d3Select(modeBar.element).selectAll('div.modebar-group').size();
     }
 
     function countButtons(modeBar) {
-        return d3.select(modeBar.element).selectAll('a.modebar-btn').size();
+        return d3Select(modeBar.element).selectAll('a.modebar-btn').size();
     }
 
     function countLogo(modeBar) {
-        return d3.select(modeBar.element).selectAll('a.plotlyjsicon').size();
+        return d3Select(modeBar.element).selectAll('a.plotlyjsicon').size();
     }
 
     function checkBtnAttr(modeBar, index, attr) {
-        var buttons = d3.select(modeBar.element).selectAll('a.modebar-btn');
-        return d3.select(buttons[0][index]).attr(attr);
+        var buttons = d3Select(modeBar.element).selectAll('a.modebar-btn');
+        return d3Select(buttons[0][index]).attr(attr);
     }
 
     var buttons = [[{
@@ -159,7 +159,7 @@ describe('ModeBar', function() {
                     return undefined;
                 }
                 var button = modeBar.buttonElements[0];
-                return d3.select(button).select('svg');
+                return d3Select(button).select('svg');
             }
 
             it('with a Plotly icon', function() {
@@ -1042,18 +1042,17 @@ describe('ModeBar', function() {
             });
 
             it('should use defaults', function(done) {
-                Plotly.plot(gd, {data: [], layout: {}})
+                Plotly.newPlot(gd, {data: [], layout: {}})
                 .then(function() {
                     selectButton(gd._fullLayout._modeBar, 'toImage').click();
                     expect(Registry.call)
                         .toHaveBeenCalledWith('downloadImage', gd, {format: 'png'});
                 })
-                .catch(failTest)
-                .then(done);
+                .then(done, done.fail);
             });
 
             it('should accept overriding defaults', function(done) {
-                Plotly.plot(gd, {data: [], layout: {}, config: {
+                Plotly.newPlot(gd, {data: [], layout: {}, config: {
                     toImageButtonOptions: {
                         format: 'svg',
                         filename: 'x',
@@ -1065,12 +1064,11 @@ describe('ModeBar', function() {
                     expect(Registry.call)
                         .toHaveBeenCalledWith('downloadImage', gd, {format: 'svg', filename: 'x'});
                 })
-                .catch(failTest)
-                .then(done);
+                .then(done, done.fail);
             });
 
             it('should accept overriding defaults with null values', function(done) {
-                Plotly.plot(gd, {data: [], layout: {}, config: {
+                Plotly.newPlot(gd, {data: [], layout: {}, config: {
                     toImageButtonOptions: {width: null, height: null}
                 }})
                 .then(function() {
@@ -1078,8 +1076,7 @@ describe('ModeBar', function() {
                     expect(Registry.call)
                         .toHaveBeenCalledWith('downloadImage', gd, {format: 'png', width: null, height: null});
                 })
-                .catch(failTest)
-                .then(done);
+                .then(done, done.fail);
             });
         });
 
@@ -1122,7 +1119,7 @@ describe('ModeBar', function() {
                 };
 
                 gd = createGraphDiv();
-                Plotly.plot(gd, mockData, mockLayout).then(function() {
+                Plotly.newPlot(gd, mockData, mockLayout).then(function() {
                     modeBar = gd._fullLayout._modeBar;
                     buttonToggle = selectButton(modeBar, 'toggleSpikelines');
                     buttonCompare = selectButton(modeBar, 'hoverCompareCartesian');
@@ -1296,7 +1293,7 @@ describe('ModeBar', function() {
                 }];
 
                 gd = createGraphDiv();
-                Plotly.plot(gd, mockData).then(function() {
+                Plotly.newPlot(gd, mockData).then(function() {
                     modeBar = gd._fullLayout._modeBar;
                     done();
                 });
@@ -1329,7 +1326,7 @@ describe('ModeBar', function() {
                 }];
 
                 gd = createGraphDiv();
-                Plotly.plot(gd, mockData).then(function() {
+                Plotly.newPlot(gd, mockData).then(function() {
                     modeBar = gd._fullLayout._modeBar;
                     done();
                 });
@@ -1353,7 +1350,7 @@ describe('ModeBar', function() {
             });
         });
 
-        describe('@noCI mapbox handlers', function() {
+        describe('mapbox handlers', function() {
             it('@gl button *resetViewMapbox* should reset the mapbox view attribute to their default', function(done) {
                 var gd = createGraphDiv();
 
@@ -1365,7 +1362,7 @@ describe('ModeBar', function() {
                     expect(mapboxLayout.zoom).toBe(zoom, 'zoom');
                 }
 
-                Plotly.plot(gd, [{
+                Plotly.newPlot(gd, [{
                     type: 'scattermapbox',
                     lon: [10, 20, 30],
                     lat: [10, 20, 30]
@@ -1395,7 +1392,7 @@ describe('ModeBar', function() {
                     _assert(10, 10, 8);
                     button.isActive(false);
                 })
-                .then(done);
+                .then(done, done.fail);
             });
         });
 
@@ -1411,7 +1408,7 @@ describe('ModeBar', function() {
                     expect(gd._fullLayout.hovermode).toBe('closest', msg + '| after 2nd click');
                 }
 
-                Plotly.plot(gd, [
+                Plotly.newPlot(gd, [
                     {type: 'scatterternary', a: [1], b: [2], c: [3]}
                 ])
                 .then(function() {
@@ -1422,8 +1419,7 @@ describe('ModeBar', function() {
 
                     _run('cartesian bundle');
                 })
-                .catch(failTest)
-                .then(done);
+                .then(done, done.fail);
             });
         });
 
@@ -1431,7 +1427,7 @@ describe('ModeBar', function() {
             it('ternary + geo case ', function(done) {
                 var gd = createGraphDiv();
 
-                Plotly.plot(gd, [
+                Plotly.newPlot(gd, [
                     {type: 'scatterternary', a: [1], b: [2], c: [3]},
                     {type: 'scattergeo', lon: [10], lat: [20]}
                 ])
@@ -1444,8 +1440,7 @@ describe('ModeBar', function() {
 
                     selectButton(gd._fullLayout._modeBar, 'resetViews').click();
                 })
-                .catch(failTest)
-                .then(done);
+                .then(done, done.fail);
             });
         });
     });
@@ -1483,7 +1478,7 @@ describe('ModeBar', function() {
 
         it('create an associated style element and destroy it on purge', function(done) {
             var styleSelector, style;
-            Plotly.plot(gd, [], {})
+            Plotly.newPlot(gd, [], {})
             .then(function() {
                 styleSelector = 'style[id*="modebar-' + gd._fullLayout._uid + '"]';
 
@@ -1495,11 +1490,11 @@ describe('ModeBar', function() {
                 style = document.querySelector(styleSelector);
                 expect(style).toBeNull();
             })
-            .then(done);
+            .then(done, done.fail);
         });
 
         it('changes icon colors', function(done) {
-            Plotly.plot(gd, [], {modebar: { color: colors[0]}})
+            Plotly.newPlot(gd, [], {modebar: { color: colors[0]}})
             .then(function() {
                 button = selectButton(gd._fullLayout._modeBar, targetBtn);
                 checkButtonColor(button, colors[0]);
@@ -1508,12 +1503,11 @@ describe('ModeBar', function() {
             .then(function() {
                 checkButtonColor(button, colors[1]);
             })
-            .catch(failTest)
-            .then(done);
+            .then(done, done.fail);
         });
 
         it('changes active icon colors', function(done) {
-            Plotly.plot(gd, [], {modebar: { activecolor: colors[0]}})
+            Plotly.newPlot(gd, [], {modebar: { activecolor: colors[0]}})
             .then(function() {
                 button = selectButton(gd._fullLayout._modeBar, targetBtn);
                 button.click();
@@ -1523,12 +1517,11 @@ describe('ModeBar', function() {
             .then(function() {
                 checkButtonColor(button, colors[1]);
             })
-            .catch(failTest)
-            .then(done);
+            .then(done, done.fail);
         });
 
         it('changes background color (displayModeBar: hover)', function(done) {
-            Plotly.plot(gd, [], {modebar: { bgcolor: colors[0]}})
+            Plotly.newPlot(gd, [], {modebar: { bgcolor: colors[0]}})
             .then(function() {
                 style = window.getComputedStyle(gd._fullLayout._modeBar.element.querySelector('.modebar-group'));
                 expect(style.backgroundColor).toBe('rgba(0, 0, 0, 0)');
@@ -1540,12 +1533,11 @@ describe('ModeBar', function() {
                 expect(style.backgroundColor).toBe('rgba(0, 0, 0, 0)');
                 expect(getStyleRule().rules[3].style.backgroundColor).toBe(colors[1]);
             })
-            .catch(failTest)
-            .then(done);
+            .then(done, done.fail);
         });
 
         it('changes background color (displayModeBar: true)', function(done) {
-            Plotly.plot(gd, [], {modebar: {bgcolor: colors[0]}}, {displayModeBar: true})
+            Plotly.newPlot(gd, [], {modebar: {bgcolor: colors[0]}}, {displayModeBar: true})
             .then(function() {
                 style = window.getComputedStyle(gd._fullLayout._modeBar.element.querySelector('.modebar-group'));
                 expect(style.backgroundColor).toBe(colors[0]);
@@ -1557,14 +1549,13 @@ describe('ModeBar', function() {
                 expect(style.backgroundColor).toBe(colors[1]);
                 expect(getStyleRule().rules[3].style.backgroundColor).toBe(colors[1]);
             })
-            .catch(failTest)
-            .then(done);
+            .then(done, done.fail);
         });
 
         it('changes orientation', function(done) {
             var modeBarEl, size;
 
-            Plotly.plot(gd, [], {modebar: { orientation: 'v' }})
+            Plotly.newPlot(gd, [], {modebar: { orientation: 'v' }})
             .then(function() {
                 modeBarEl = gd._fullLayout._modeBar.element;
                 size = modeBarEl.getBoundingClientRect();
@@ -1576,7 +1567,49 @@ describe('ModeBar', function() {
                 size = modeBarEl.getBoundingClientRect();
                 expect(size.width > size.height).toBeTruthy();
             })
-            .then(done);
+            .then(done, done.fail);
+        });
+    });
+
+    describe('modebar html', function() {
+        var gd;
+        var traces = [
+            {type: 'scatter', x: [1, 2], y: [1, 2]},
+            {type: 'scatter3d', x: [1, 2], y: [1, 2], z: [1, 2]},
+            {type: 'surface', z: [[1, 2], [1, 2]]},
+            {type: 'heatmap', z: [[1, 2], [1, 2]]},
+        ];
+
+        beforeEach(function() {
+            gd = createGraphDiv();
+        });
+
+        afterEach(function() {
+            Plotly.purge(gd);
+            destroyGraphDiv();
+        });
+
+        function getModebarDiv() {
+            return document.getElementById('modebar-' + gd._fullLayout._uid);
+        }
+
+        traces.forEach(function(fromTrace) {
+            traces.forEach(function(toTrace) {
+                it('is still present when switching from ' + fromTrace.type + ' to ' + toTrace.type, function(done) {
+                    Plotly.newPlot(gd, [fromTrace], {})
+                    .then(function() {
+                        expect(getModebarDiv()).toBeTruthy();
+                        expect(getModebarDiv().innerHTML).toBeTruthy();
+                    })
+                    .then(Plotly.react(gd, [toTrace]))
+                    .then(function() {
+                        expect(getModebarDiv()).toBeTruthy();
+                        expect(getModebarDiv().innerHTML).toBeTruthy();
+                    })
+                    .then(done)
+                    .catch(failTest);
+                });
+            });
         });
     });
 });

@@ -1,11 +1,3 @@
-/**
-* Copyright 2012-2020, Plotly, Inc.
-* All rights reserved.
-*
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of this source tree.
-*/
-
 'use strict';
 
 var annAttrs = require('../annotations/attributes');
@@ -13,11 +5,11 @@ var scatterLineAttrs = require('../../traces/scatter/attributes').line;
 var dash = require('../drawing/attributes').dash;
 var extendFlat = require('../../lib/extend').extendFlat;
 var templatedArray = require('../../plot_api/plot_template').templatedArray;
+var axisPlaceableObjs = require('../../constants/axis_placeable_objects');
 
 module.exports = templatedArray('shape', {
     visible: {
         valType: 'boolean',
-        role: 'info',
         dflt: true,
         editType: 'calc+arraydraw',
         description: [
@@ -28,7 +20,6 @@ module.exports = templatedArray('shape', {
     type: {
         valType: 'enumerated',
         values: ['circle', 'rect', 'path', 'line'],
-        role: 'info',
         editType: 'calc+arraydraw',
         description: [
             'Specifies the shape type to be drawn.',
@@ -55,7 +46,6 @@ module.exports = templatedArray('shape', {
         valType: 'enumerated',
         values: ['below', 'above'],
         dflt: 'above',
-        role: 'info',
         editType: 'arraydraw',
         description: 'Specifies whether shapes are drawn below or above traces.'
     },
@@ -63,11 +53,7 @@ module.exports = templatedArray('shape', {
     xref: extendFlat({}, annAttrs.xref, {
         description: [
             'Sets the shape\'s x coordinate axis.',
-            'If set to an x axis id (e.g. *x* or *x2*), the `x` position',
-            'refers to an x coordinate.',
-            'If set to *paper*, the `x` position refers to the distance from',
-            'the left side of the plotting area in normalized coordinates',
-            'where *0* (*1*) corresponds to the left (right) side.',
+            axisPlaceableObjs.axisRefDescription('x', 'left', 'right'),
             'If the axis `type` is *log*, then you must take the',
             'log of your desired range.',
             'If the axis `type` is *date*, then you must convert',
@@ -78,7 +64,6 @@ module.exports = templatedArray('shape', {
         valType: 'enumerated',
         values: ['scaled', 'pixel'],
         dflt: 'scaled',
-        role: 'info',
         editType: 'calc+arraydraw',
         description: [
             'Sets the shapes\'s sizing mode along the x axis.',
@@ -94,7 +79,6 @@ module.exports = templatedArray('shape', {
     },
     xanchor: {
         valType: 'any',
-        role: 'info',
         editType: 'calc+arraydraw',
         description: [
             'Only relevant in conjunction with `xsizemode` set to *pixel*.',
@@ -106,7 +90,6 @@ module.exports = templatedArray('shape', {
     },
     x0: {
         valType: 'any',
-        role: 'info',
         editType: 'calc+arraydraw',
         description: [
             'Sets the shape\'s starting x position.',
@@ -115,7 +98,6 @@ module.exports = templatedArray('shape', {
     },
     x1: {
         valType: 'any',
-        role: 'info',
         editType: 'calc+arraydraw',
         description: [
             'Sets the shape\'s end x position.',
@@ -126,18 +108,13 @@ module.exports = templatedArray('shape', {
     yref: extendFlat({}, annAttrs.yref, {
         description: [
             'Sets the annotation\'s y coordinate axis.',
-            'If set to an y axis id (e.g. *y* or *y2*), the `y` position',
-            'refers to an y coordinate',
-            'If set to *paper*, the `y` position refers to the distance from',
-            'the bottom of the plotting area in normalized coordinates',
-            'where *0* (*1*) corresponds to the bottom (top).'
+            axisPlaceableObjs.axisRefDescription('y', 'bottom', 'top'),
         ].join(' ')
     }),
     ysizemode: {
         valType: 'enumerated',
         values: ['scaled', 'pixel'],
         dflt: 'scaled',
-        role: 'info',
         editType: 'calc+arraydraw',
         description: [
             'Sets the shapes\'s sizing mode along the y axis.',
@@ -153,7 +130,6 @@ module.exports = templatedArray('shape', {
     },
     yanchor: {
         valType: 'any',
-        role: 'info',
         editType: 'calc+arraydraw',
         description: [
             'Only relevant in conjunction with `ysizemode` set to *pixel*.',
@@ -165,7 +141,6 @@ module.exports = templatedArray('shape', {
     },
     y0: {
         valType: 'any',
-        role: 'info',
         editType: 'calc+arraydraw',
         description: [
             'Sets the shape\'s starting y position.',
@@ -174,7 +149,6 @@ module.exports = templatedArray('shape', {
     },
     y1: {
         valType: 'any',
-        role: 'info',
         editType: 'calc+arraydraw',
         description: [
             'Sets the shape\'s end y position.',
@@ -184,7 +158,6 @@ module.exports = templatedArray('shape', {
 
     path: {
         valType: 'string',
-        role: 'info',
         editType: 'calc+arraydraw',
         description: [
             'For `type` *path* - a valid SVG path with the pixel values',
@@ -218,7 +191,6 @@ module.exports = templatedArray('shape', {
         min: 0,
         max: 1,
         dflt: 1,
-        role: 'info',
         editType: 'arraydraw',
         description: 'Sets the opacity of the shape.'
     },
@@ -226,13 +198,11 @@ module.exports = templatedArray('shape', {
         color: extendFlat({}, scatterLineAttrs.color, {editType: 'arraydraw'}),
         width: extendFlat({}, scatterLineAttrs.width, {editType: 'calc+arraydraw'}),
         dash: extendFlat({}, dash, {editType: 'arraydraw'}),
-        role: 'info',
         editType: 'calc+arraydraw'
     },
     fillcolor: {
         valType: 'color',
         dflt: 'rgba(0,0,0,0)',
-        role: 'info',
         editType: 'arraydraw',
         description: [
             'Sets the color filling the shape\'s interior. Only applies to closed shapes.'
@@ -242,7 +212,6 @@ module.exports = templatedArray('shape', {
         valType: 'enumerated',
         values: ['evenodd', 'nonzero'],
         dflt: 'evenodd',
-        role: 'info',
         editType: 'arraydraw',
         description: [
             'Determines which regions of complex paths constitute the interior.',
@@ -251,7 +220,6 @@ module.exports = templatedArray('shape', {
     },
     editable: {
         valType: 'boolean',
-        role: 'info',
         dflt: false,
         editType: 'calc+arraydraw',
         description: [
